@@ -1,0 +1,46 @@
+$red: #F92E16;
+$blue: #16A0F9;
+$green: #6CE225;
+$yellow: #FFC300;
+$orange: #FF5733;
+$trans: transparent;
+$white: #ffffff;
+$light: #f5f5f5;
+$ccc: #cccccc;
+$black: #000;
+$dark: #222;
+$navy: #24478D;
+$halfblack:rgba(black, 0.5);
+$halfwhite:rgba(white, 0.5);
+$purple:#673AB7;
+$teal:#50E3C2;
+$pink:#F787B5;
+$mint:#48CFAD;
+$aqua:#4FC1E9;
+
+$colors: (
+  "red": $red,
+  "orange": $orange,
+  "yellow": $yellow,
+  "green": $green,
+  "blue": $blue,
+  "purple": $purple,
+  "white": $white,
+  "light": $light,
+  "ccc": $ccc,
+  "black": $black,
+  "dark": $dark,
+  "halfblack": $halfblack,
+  "halfwhite": $halfwhite,
+  "navy": $navy,
+  "teal": $teal,
+  "mint": $mint,
+  "aqua": $aqua
+);
+
+@each $class, $color in $colors {
+  .bg-#{$class} { background: $color; }
+  .fill-#{$class} { fill: $color; }
+  .bdr-#{$class} { border: 1px solid $color; }
+  .#{$class} { color: $color; }
+}

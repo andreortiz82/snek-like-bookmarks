@@ -1,0 +1,170 @@
+@mixin shadow($size:"small") {
+  @if $size == "small" {
+    $value:0 2px 5px 0 rgba(0, 0, 0, 0.26);
+    box-shadow:$value;
+    -webkit-box-shadow:$value;
+    -moz-box-shadow:$value;
+  } @else {
+    $value:0 8px 17px 0 rgba(0, 0, 0, 0.2);
+    box-shadow:$value;
+    -webkit-box-shadow:$value;
+    -moz-box-shadow:$value;
+  }
+}
+
+@mixin button($bg, $text, $bdr:none){
+  @include border-radius;
+  padding: rem(20);
+  background: $bg;
+  color: $text;
+  font-weight: bold;
+  text-decoration: none;
+  cursor: pointer;
+  border: $bdr;
+  transition:all 0.3s;
+  &:hover {
+    background: rgba($bg, 0.8);
+    @include scale(1.15);
+  }
+  &:active { @include scale(1); }
+  &:focus {
+    box-shadow: none;
+    outline: none;
+  }
+}
+
+@mixin box-shadow($options) {
+  box-shadow:$options;
+  -webkit-box-shadow:$options;
+  -moz-box-shadow:$options;
+}
+
+@mixin placeholder($color: $input-color-placeholder) {
+  &::-moz-placeholder {
+    color: $color;
+    opacity: 1; // Override Firefox's unusual default opacity; see https://github.com/twbs/bootstrap/pull/11526
+  }
+  &:-ms-input-placeholder { color: $color; } // Internet Explorer 10+
+  &::-webkit-input-placeholder  { color: $color; } // Safari and Chrome
+}
+
+@mixin border-radius($rad:$radius) {
+  border-radius: $rad;
+}
+
+@mixin just-the-tip($size, $color, $direction) {
+    content: '';
+    height: 0;
+    width: 0;
+    border-color: $trans;
+    border-style: solid;
+    border-width: $size / 2;
+    display: block;
+
+    @if $direction == 'top' {
+        border-top-color:$color;
+      } @else if $direction == 'bottom' {
+        border-bottom-color:$color;
+      } @else if $direction == 'right' {
+        border-left-color:$color;
+      } @else {
+        border-right-color:$color;
+      }
+    }
+
+@mixin transform($transforms) {
+     -moz-transform: $transforms;
+       -o-transform: $transforms;
+      -ms-transform: $transforms;
+  -webkit-transform: $transforms;
+          transform: $transforms;
+}
+// rotate
+@mixin rotate ($deg) {
+  @include transform(rotate(#{$deg}deg));
+}
+
+// scale
+@mixin scale($scale) {
+   @include transform(scale($scale));
+}
+// translate
+@mixin translate ($x, $y) {
+   @include transform(translate($x, $y));
+}
+// skew
+@mixin skew ($x, $y) {
+   @include transform(skew(#{$x}deg, #{$y}deg));
+}
+//transform origin
+@mixin transform-origin ($origin) {
+    moz-transform-origin: $origin;
+       -o-transform-origin: $origin;
+      -ms-transform-origin: $origin;
+  -webkit-transform-origin: $origin;
+          transform-origin: $origin;
+}
+
+@mixin flex-container($type:flex, $direction:row, $wrap:nowrap, $justify:flex-start, $align:flex-start, $align-content:flex-start) {
+  display: $type;
+  /* or inline-flex */
+  flex-direction: $direction;
+  /* or row | row-reverse | column | column-reverse; */
+  flex-wrap: $wrap;
+  /* or wrap | wrap-reverse */
+  justify-content: $justify;
+  /* or flex-start | flex-end | center | space-between | space-around */
+  align-items: $align;
+  /* flex-start | flex-end | center | baseline | stretch; */
+  align-content: $align-content;
+  /* flex-start | flex-end | center | space-between | space-around | stretch */
+}
+
+@mixin fbox($val:0){
+  flex-grow:$val;
+}
+
+@function rem($size, $base-font-size: 16) {
+  $remSize: $size / $base-font-size;
+  @return #{$remSize}rem;
+}
+
+@mixin clearfix {
+  &:after {
+    content: "";
+    display: table;
+    clear: both;
+  }
+}
+
+@mixin bgSkew($color, $x, $y) {
+  position: relative;
+
+  &:after {
+    content: '';
+    display: block;
+    background: $color;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    @include skew ($x, $y);
+  }
+}
+
+@mixin polygon() {
+  $value: 15% 0, 100% 0, 85% 100%, 0 100%;
+  -webkit-clip-path: polygon($value);
+  clip-path: polygon($value);
+}
+
+@mixin mq($point) {
+  @if $point == 'lg' {
+    @media (min-width: 64.063em) { @content; }
+  }
+  @else if $point == 'md' {
+    @media (min-width: 40.063em) { @content; }
+  }
+  @else if $point == 'sm' {
+    @media (max-width: 40em)  { @content; }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "manifest_version": 2,
+  "version": "1.0.0",
+  "name": "Magpie Bookmark",
+  "description": "Collect your Internet.",
+  "version": "1.0",
+  "homepage_url": "http://www.andreortiz.com",
+  "content_security_policy": "script-src 'self' 'unsafe-eval' https://cdnjs.cloudflare.com; object-src 'self'",
+  "browser_action": {
+    "default_icon": "assets/images/128.png",
+    "default_popup": "popup.html"
+  },
+  "chrome_url_overrides": {
+      "newtab": "index.html"
+   },
+  "permissions": [
+    "activeTab",
+    "storage",
+    "tabs",
+    "bookmarks",
+    "chrome://favicon/",
+    "<all_urls>",
+    "contextMenus",
+    "notifications"],
+  "optional_permissions": [
+    "tabs"
+  ]
+}

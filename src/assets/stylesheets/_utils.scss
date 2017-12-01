@@ -1,0 +1,36 @@
+body {
+  font-family: 'Muli', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: $black;
+  background: $white;
+  font-size: rem(18);
+  line-height: rem(28)
+}
+
+// Special
+::-moz-selection { background: $pink; }
+::selection { background: $pink; }
+
+.text-right { text-align: right; }
+.text-left { text-align: left; }
+
+// Grid
+.container {
+  width: $app-width-lg;
+  margin: auto;
+}
+
+.flex,
+.flex-container {
+  @include flex-container;
+  .box,
+  .fbox { @include fbox(1); }
+}
+
+// Typography
+.bold { font-weight: bold }
+.italic { font-style: italic; }
+.sans { font-family: $sans; }
+.serif { font-family: $serif; }
+p.lead { font-size: rem(20) }
