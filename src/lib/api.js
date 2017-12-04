@@ -1,66 +1,70 @@
 import axios from 'axios'
 
-var Api = {
-  bookmark: {
-    get: function (callback) {
-      var config = {
-        timeout: 5000,
-        headers: {
-          'x-apikey': '5a20d44e7814ac5b3a05f509',
-          'content-type': 'application/json',
-          'cache-control': 'no-cache'
-        },
-      }
+var config = {
+  timeout: 5000,
+  headers: {
+    'x-apikey': '5a203ad27814ac5b3a05f4f7',
+    'content-type': 'application/json',
+    'cache-control': 'no-cache'
+  }
+}
 
+var Api = {
+  category: {
+    // GET
+    get: function (callback) {
+      axios({
+        method: 'GET',
+        url: 'https://bookmarks-d859.restdb.io/rest/category',
+        timeout: config.timeout,
+        headers: config.headers,
+      }).then(function (response) {
+        console.log(response.data)
+        callback(response)
+      })
+    },
+    // POST
+    post: function (data, callback) {
+      axios({
+        method: 'PUT',
+        url: 'https://bookmarks-d859.restdb.io/rest/category/'+data.category._id,
+        data: data,
+      }).then(function (response) {
+        callback(response)
+      })
+    },
+    // DELETE
+    remove: function (resource) {},
+    // PUT
+    update: function (resource) {}
+  },
+  bookmark: {
+    // GET
+    get: function (callback) {
       axios({
         method: 'GET',
         url: 'https://bookmarks-d859.restdb.io/rest/bookmark',
         timeout: config.timeout,
         headers: config.headers,
-        onUploadProgress: function (progressEvent) {
-          // console.log(progressEvent.loaded)
-        },
-        onDownloadProgress: function (progressEvent) {
-          // console.log(progressEvent.loaded)
-        }
       }).then(function (response) {
-        // console.log(response.status)
         callback(response)
       })
     },
+    // POST
     post: function (data, callback) {
-      var config = {
-        timeout: 5000,
-        headers: {
-          'x-apikey': '5a203ad27814ac5b3a05f4f7',
-          'content-type': 'application/json',
-          'cache-control': 'no-cache'
-        },
-      }
-
       axios({
         method: 'POST',
         url: 'https://bookmarks-d859.restdb.io/rest/bookmark',
-        timeout: config.timeout,
-        headers: config.headers,
         data: data,
-        onUploadProgress: function (event) {
-          // console.log('onUploadProgress', event)
-        },
-        onDownloadProgress: function (event) {
-          // console.log('onDownloadProgress', event)
-        }
       }).then(function (response) {
         // console.log(response)
         callback(response)
       })
     },
-    remove: function (resource) {
-      console.log(resource)
-    },
-    update: function (resource) {
-      console.log(resource)
-    },
+    // DELETE
+    remove: function (resource) {},
+    // PUT
+    update: function (resource) {}
   }
 }
 
