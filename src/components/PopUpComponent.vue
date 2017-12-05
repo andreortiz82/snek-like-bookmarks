@@ -7,7 +7,7 @@
         </div>
         <nav class="category-list">
           <span @click="assignCategory(category)" v-for="category in categories">
-            {{ category.name }}
+            {{ category.label }}
           </span>
         </nav>
 
@@ -27,13 +27,17 @@
 </template>
 
 <script>
-  import api from '../lib/api'
-  import _ from 'underscore'
+  import { usersRef, categoriesRef, firebase, FB } from '../lib/firebase';
 
   export default {
     name: 'popup-component',
+    firebase: {
+      categories: categoriesRef,
+      bookmarks: bookmarksRef
+    },
     data () {
       return {
+        user: null,
         url: '',
         title: '',
         favIconUrl: '',
@@ -55,31 +59,21 @@
       })
     },
     mounted: function () {
-      api.category.get((resource) => {
-        this.categories = resource.data
-      })
+
     },
     methods: {
-      filterCategories: function (data) {
-        var categoryCollection = []
-
-        data.forEach((bookmark) => {
-          categoryCollection.push(bookmark.category_id)
-        })
-
-        return _.uniq(categoryCollection)
-      },
       assignCategory: function(category) {
-        this.category = category.name
+        this.category = category
       },
       saveBookmark: function () {
         var self = this
         this.isSaving = !this.isSaving
+
         var bookmark = {
           url: this.url,
           title: this.title,
           favIconUrl: this.favIconUrl,
-          category: this.category
+          category: this.category['.key']
         }
 
         api.category.post(bookmark, (resource) => {

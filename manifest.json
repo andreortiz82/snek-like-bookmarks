@@ -5,7 +5,7 @@
   "description": "Collect your Internet.",
   "version": "1.0",
   "homepage_url": "http://www.andreortiz.com",
-  "content_security_policy": "script-src 'self' 'unsafe-eval' https://cdnjs.cloudflare.com; object-src 'self'",
+  "content_security_policy": "script-src 'self' 'unsafe-eval' https://www.gstatic.com/ https://*.firebaseio.com https://www.googleapis.com https://cdnjs.cloudflare.com; object-src 'self'",
   "browser_action": {
     "default_icon": "assets/images/128.png",
     "default_popup": "popup.html"
@@ -17,6 +17,7 @@
     "activeTab",
     "storage",
     "tabs",
+    "identity",
     "bookmarks",
     "chrome://favicon/",
     "<all_urls>",

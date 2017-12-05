@@ -1,108 +1,139 @@
 <template>
-  <div id="tab-component">
-    <header>
-      <button @click="saveBookmark()" type="button">Add Bookmark</button>
+  <div id="tab-component" class="container">
+    <header class="navbar">
+      <ul class="nav">
+        <li v-if="user != null" class="nav-item">
+          <a href="#" class="nav-link" @click="logout()">Logout</a>
+        </li>
+        <li v-else class="nav-item">
+          <a href="#" class="nav-link" @click="login()">Login</a>
+        </li>
+      </ul>
     </header>
-    <div class="flex">
-      <div class="box" v-for="bookmark in collection" >
-        <a :href="bookmark.url">
-        <img :src="bookmark.favIconUrl"/>
-        {{ bookmark.title }}
-        </a>
+
+    <section v-if="user != null">
+      <div class="form-group">
+        <label for="exampleFormControlSelect1">Choose a Category</label>
+        <select v-model="label" class="form-control">
+          <option v-for="category in categories" :value="category.label">{{ category.label }}</option>
+        </select>
+      </div>
+      <button type="button" class="btn btn-primary" @click="addCategory()">+ Add Category</button>
+    </section>
+
+    <hr/>
+
+    <div class="row">
+      <div class="col" v-for="category in categories" :key="category['.key']">
+        <div class="card">
+          <div class="card-body">
+            <h5>{{ category.label }}</h5>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-  import api from '../lib/api'
-  import _ from 'underscore'
+  import { usersRef, categoriesRef, firebase, FB } from '../lib/firebase';
+  import faker from 'faker'
 
   export default {
     name: 'tab-component',
+    firebase: {
+      categories: categoriesRef
+    },
     data () {
       return {
-        url: '',
-        title: '',
-        favIconUrl: '',
-        isSaving: false,
-        isSaved: false,
-        category: '',
-        collection: ''
+        user: null,
+        category: null,
+        label: faker.commerce.department(),
+        title: faker.company.companyName(),
+        url: faker.internet.url(),
+        favIconUrl: faker.image.avatar()
       }
     },
     methods: {
-      saveBookmark: function () {
-        var self = this
-
-        var bookmark = {
-          url: this.url,
-          title: this.title,
-          favIconUrl: this.favIconUrl,
-          category_id: this.category
-        }
-
-        api.bookmark.post(bookmark, (resource) => {
-          api.bookmark.get((resource) => {
-            self.collection = resource.data
-          })
-        })
-
-        var self = this
-        this.isSaving = !this.isSaving
-        var bookmark = {
-          url: this.url,
-          title: this.title,
-          favIconUrl: this.favIconUrl,
-          category_id: this.category
-        }
-
-        api.bookmark.post(bookmark, (resource) => {
-          this.isSaved = !this.isSaved
-          this.isSaving = !this.isSaving
-        })
+      loadSession: function () {
 
       },
-      filterCategories: function (data) {
-        var categoryCollection = []
+      saveSession: function () {
 
-        data.forEach((bookmark) => {
-          categoryCollection.push(bookmark.category_id)
-        })
+      },
+      login: function () {
+        var self = this
+        var provider = new FB.auth.GoogleAuthProvider();
+        provider.addScope('https://www.googleapis.com/auth/contacts.readonly');
+        firebase.auth().signInWithPopup(provider).then(function(result) {
+          var token = result.credential.accessToken;
+          var user = result.user;
 
-        return _.uniq(categoryCollection)
+          self.user = {
+            token: token,
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName,
+            photoURL: user.photoURL }
+
+          console.log(self.user)
+
+
+        }).catch(function(error) {
+          console.log('error => ',error)
+        });
+      },
+      logout: function () {
+        var self = this
+        firebase.auth().signOut().then(function(signOut) {
+          self.user = null
+        }).catch(function(error) {
+          console.log('error => ',error)
+        });
+      },
+      addCategory: function () {
+        var object = {
+          label: faker.commerce.department(),
+          owner: this.user.uid,
+          bookmarks: {
+            title: faker.company.companyName(),
+            url: faker.internet.url(),
+            favIconUrl: faker.image.avatar()
+          }
+        }
+
+        categoriesRef.push(object)
+
+        this.label = faker.commerce.department()
+        this.title = faker.company.companyName()
+        this.url = faker.internet.url()
+        this.favIconUrl = faker.image.avatar()
       }
     },
-    created: function () {
-      var queryInfo = {
-      active: true,
-      currentWindow: true }
+    mounted: function () {
+      var self = this
+      firebase.auth().onAuthStateChanged(function(user) {
+        if (user) {
+          self.user = {
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName,
+            photoURL: user.photoURL }
+        }
+
+        console.log(self.user)
+
+      })
+      // var self = this
+      // var queryInfo = {
+      // active: true,
+      // currentWindow: true }
 
       // chrome.tabs.query(queryInfo, (tabs) => {
       //   this.url = tabs[0].url
       //   this.title = tabs[0].title
       //   this.favIconUrl = tabs[0].favIconUrl
       // })
-    },
-    mounted: function () {
-      api.category.get((resource) => {
-        this.collection = resource.data
-      })
     }
   }
 </script>
-
-<style lang="scss">
-  #tab-component {
-    .flex {
-      flex-wrap: wrap;
-
-      .box {
-        width: 20%;
-        padding: 10px;
-        border:1px solid #ccc;
-        margin: 10px;
-      }
-    }
-  }
-</style>
