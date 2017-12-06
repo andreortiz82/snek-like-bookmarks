@@ -1,131 +1,152 @@
 <template>
-  <div id="popup-component">
-    <div class="popup-container">
-      <div class="action-wrapper" v-if="!isSaved && !isSaving">
-        <div class="field">
-          <input type="text" v-model="category" name="category"/>
+  <div id="tab-component">
+    <div class="list-container" v-if="!isAddingCustom">
+      <header>
+        <ul class="nav">
+          <li v-if="user == null" class="nav-item">
+            <a href="#" class="nav-link" @click="login()">Login</a>
+          </li>
+        </ul>
+      </header>
+
+      <section v-if="user != null">
+        <div class="list-group">
+          <a :key="category['.key']" v-for="(category, index) in categories" class="list-group-item" @click="chooseFromUserCategories(category, index)" :class="{active: isSelected(index)}">{{ category.label }}</a>
+          <a href="#" class="list-group-item" @click="toggleView()">+ Add Category</a>
         </div>
-        <nav class="category-list">
-          <span @click="assignCategory(category)" v-for="category in categories">
-            {{ category.label }}
-          </span>
-        </nav>
-
-        <div class="save">
-          <button @click="saveBookmark()" type="button">
-            Add Bookmark
-          </button>
-        </div>
-
-      </div>
-
-      <div v-else class="confirmation-wrapper">
-        <span>Saved!</span>
-      </div>
+      </section>
     </div>
+
+    <div class="form-container card" v-else>
+      <div class="form-group card-body">
+        <label>New Category</label>
+        <input type="text" class="form-control" name="category" v-model="newCategoryName">
+        <hr>
+        <button type="button" class="btn btn-primary" @click="saveCustomCategory()">Save</button>
+        <button type="button" class="btn btn-link" @click="toggleView()">cancel</button>
+      </div>
+
+    </div>
+
   </div>
 </template>
 
 <script>
   import { usersRef, categoriesRef, firebase, FB } from '../lib/firebase';
+  import faker from 'faker'
 
   export default {
-    name: 'popup-component',
+    name: 'tab-component',
     firebase: {
-      categories: categoriesRef,
-      bookmarks: bookmarksRef
+      categories: categoriesRef
     },
     data () {
       return {
+        selected: null,
+        isAddingCustom: false,
+        newCategoryName: '',
         user: null,
-        url: '',
-        title: '',
-        favIconUrl: '',
-        isSaving: false,
-        isSaved: false,
-        category: '',
-        categories: ''
+        category: null,
+        label: faker.commerce.department(),
+        title: faker.company.companyName(),
+        url: faker.internet.url(),
+        favIconUrl: faker.image.avatar()
       }
     },
-    created: function () {
+    methods: {
+      isSelected: function (i) {
+        return i === this.selected
+      },
+      login: function () {
+        var self = this
+        var provider = new FB.auth.GoogleAuthProvider();
+        provider.addScope('https://www.googleapis.com/auth/contacts.readonly');
+        firebase.auth().signInWithPopup(provider).then(function(result) {
+          var token = result.credential.accessToken;
+          var user = result.user;
+
+          self.user = {
+            token: token,
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName,
+            photoURL: user.photoURL }
+
+          console.log(self.user)
+
+        }).catch(function(error) {
+          console.log('error => ',error)
+        });
+      },
+      logout: function () {
+        var self = this
+        firebase.auth().signOut().then(function(signOut) {
+          self.user = null
+        }).catch(function(error) {
+          console.log('error => ',error)
+        });
+      },
+      chooseFromUserCategories: function (category, index) {
+        this.selected = index
+        var object = {
+          label: category.label,
+          slug: category.slug,
+          owner: this.user.uid,
+        }
+        categoriesRef.child(category['.key']).push(this.bookMarkObject())
+      },
+      toggleView: function () {
+        this.isAddingCustom = !this.isAddingCustom
+      },
+      saveCustomCategory: function () {
+        var object = {
+          label: this.newCategoryName,
+          slug: this.newCategoryName.replace(/\s/g, '_').toLowerCase() ,
+          owner: this.user.uid,
+        }
+        categoriesRef.push(object).child(object.label).push(this.bookMarkObject())
+        this.newCategoryName = ''
+        this.isAddingCustom = !this.isAddingCustom
+      },
+      bookMarkObject: function(){
+        return {
+          title: this.title,
+          url: this.url,
+          favIconUrl: this.favIconUrl
+        }
+      }
+    },
+    mounted: function () {
+      var self = this
       var queryInfo = {
       active: true,
       currentWindow: true }
 
-      chrome.tabs.query(queryInfo, (tabs) => {
-        this.url = tabs[0].url
-        this.title = tabs[0].title
-        this.favIconUrl = tabs[0].favIconUrl
-      })
-    },
-    mounted: function () {
+      firebase.auth().onAuthStateChanged(function(user) {
+        if (user) {
+          self.user = {
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName,
+            photoURL: user.photoURL }
 
-    },
-    methods: {
-      assignCategory: function(category) {
-        this.category = category
-      },
-      saveBookmark: function () {
-        var self = this
-        this.isSaving = !this.isSaving
-
-        var bookmark = {
-          url: this.url,
-          title: this.title,
-          favIconUrl: this.favIconUrl,
-          category: this.category['.key']
+          usersRef.child(user.uid).once('uid').then((snapshot)=>{
+            console.log('snapshot', snapshot)
+          })
+          chrome.tabs.query(queryInfo, (tabs) => {
+            this.url = tabs[0].url
+            this.title = tabs[0].title
+            this.favIconUrl = tabs[0].favIconUrl
+          })
         }
 
-        api.category.post(bookmark, (resource) => {
-          this.isSaved = !this.isSaved
-          this.isSaving = !this.isSaving
-        })
-
-      }
+      })
     }
   }
 </script>
 
 <style lang="scss">
-  @import '../assets/stylesheets/variables';
-  @import '../assets/stylesheets/mixins';
-  @import '../assets/stylesheets/colors';
-
-  #popup-component {
-    min-width: rem(280);
-
-    .popup-container {
-      .action-wrapper {
-        .field {
-          input[type='text'] {
-            height: rem(40);
-            width: 100%;
-          }
-        }
-
-        .category-list {
-          > span {
-            display: block;
-            color: $black;
-            padding: rem(5);
-            font-weight: bold;
-            cursor: pointer;
-            border-bottom: 1px solid $ccc;
-            transition: all 0.3s;
-
-            &:hover { background: $light; }
-          }
-        }
-
-        .save {
-          button {
-            @include button($orange, $white);
-            display: block;
-            width: 100%;
-            border-radius: 0;
-          }
-        }
-      }
-    }
+  #tab-component {
+    width: 280px;
   }
 </style>
