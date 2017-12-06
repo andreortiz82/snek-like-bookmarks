@@ -11,7 +11,7 @@
 
       <section v-if="user != null">
         <div class="list-group">
-          <a :key="category['.key']" v-for="(category, index) in categories" class="list-group-item" @click="chooseFromUserCategories(category, index)">{{ category.label }}</a>
+          <a :key="category['.key']" v-for="(category, index) in foo" class="list-group-item" @click="chooseFromUserCategories(category, index)">{{ category.label }}</a>
           <a href="#" class="list-group-item" @click="toggleView()">+ Add Category</a>
         </div>
       </section>
@@ -46,10 +46,11 @@
         newCategoryName: '',
         user: null,
         category: null,
-        label: faker.commerce.department(),
+        label: '',
         title: faker.company.companyName(),
         url: faker.internet.url(),
-        favIconUrl: faker.image.avatar()
+        favIconUrl: faker.image.avatar(),
+        foo: null
       }
     },
     methods: {
@@ -82,6 +83,7 @@
       },
       chooseFromUserCategories: function (category, index) {
         var self = this
+
         var newCategoryObject = {
           label: category.label,
           slug: category.slug,
@@ -92,7 +94,7 @@
         categoriesRef.child(category['.key']).once('value', function(snapshot) {
           var exists = (snapshot.val() !== null);
           if(!exists){
-            bookmarksRef.push(self.bookMarkObject())
+            bookmarksRef.set(self.bookMarkObject())
           }
         })
       },
@@ -103,9 +105,12 @@
         var newCategoryObject = {
           label: this.newCategoryName,
           slug: this.newCategoryName.replace(/\s/g, '_').toLowerCase() ,
-          owner: this.user.uid,
+          owner: this.user.uid
         }
-        categoriesRef.push(newCategoryObject).child('bookmarks').push(this.bookMarkObject())
+
+        categoriesRef.child(this.user.uid).child(newCategoryObject.slug).set(newCategoryObject)
+        bookmarksRef.child(this.user.uid).push(this.bookMarkObject())
+
         this.newCategoryName = ''
         this.isAddingCustom = !this.isAddingCustom
       },
@@ -122,7 +127,7 @@
       var queryInfo = {
       active: true,
       currentWindow: true }
-
+      // this.logout()
       firebase.auth().onAuthStateChanged(function(user) {
         if (user) {
           self.user = {
@@ -131,13 +136,14 @@
             displayName: user.displayName,
             photoURL: user.photoURL }
 
-          usersRef.child(self.user.uid).once('value', function(snapshot) {
-            var exists = (snapshot.val() !== null);
-            if(!exists){
-              usersRef.child(self.user.uid).push(self.user)
-            }
-          })
+          usersRef.orderByChild('uid').equalTo(self.user.uid).on('value', (snapshot) => {
+              var exists = (snapshot.val() !== null)
+              if(!exists){
+                usersRef.push(self.user)
+              }
+            });
 
+          // For Tabs
           if (chrome.tabs != undefined) {
             chrome.tabs.query(queryInfo, (tabs) => {
               this.url = tabs[0].url

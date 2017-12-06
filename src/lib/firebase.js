@@ -14,5 +14,5 @@ export const FB = fb
 export const firebase = app
 export const db = app.database()
 export const usersRef = db.ref('/users')
-export const categoriesRef = db.ref('/users/categories')
-export const bookmarksRef = db.ref('/users/categories/bookmarks')
+export const categoriesRef = db.ref('/categories')
+export const bookmarksRef = db.ref('/bookmarks')
