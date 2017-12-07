@@ -1,152 +1,162 @@
 <template>
-  <div id="tab-component">
-    <div class="list-container" v-if="!isAddingCustom">
-      <header>
-        <ul class="nav">
-          <li v-if="user == null" class="nav-item">
-            <a href="#" class="nav-link" @click="login()">Login</a>
-          </li>
-        </ul>
-      </header>
+  <div id="popup-component">
+    <div v-if="!isSaving || !isSaved">
+      <div class="list-container" v-if="!isAddingCustom">
+        <header>
+          <ul class="nav">
+            <li class="nav-item" v-if="user === null">
+              <a href="#" class="nav-link" @click="login()">Login</a>
+            </li>
+            <li class="nav-item" v-else>
+              <a href="#" class="nav-link" @click="logout()">Logout</a>
+            </li>
+          </ul>
+        </header>
 
-      <section v-if="user != null">
-        <div class="list-group">
-          <a :key="category['.key']" v-for="(category, index) in categories" class="list-group-item" @click="chooseFromUserCategories(category, index)" :class="{active: isSelected(index)}">{{ category.label }}</a>
-          <a href="#" class="list-group-item" @click="toggleView()">+ Add Category</a>
-        </div>
-      </section>
-    </div>
-
-    <div class="form-container card" v-else>
-      <div class="form-group card-body">
-        <label>New Category</label>
-        <input type="text" class="form-control" name="category" v-model="newCategoryName">
-        <hr>
-        <button type="button" class="btn btn-primary" @click="saveCustomCategory()">Save</button>
-        <button type="button" class="btn btn-link" @click="toggleView()">cancel</button>
+        <section v-if="user != null">
+          <div class="list-group">
+            <a :key="index" v-for="(category, index) in categories" class="list-group-item" @click="chooseFromUserCategories(category, index)">{{ category.label }}</a>
+            <a href="#" class="list-group-item" @click="toggleView()">+ Add Category</a>
+          </div>
+        </section>
       </div>
 
+      <div class="form-container card" v-else>
+        <div class="form-group card-body">
+          <label>New Category</label>
+          <input type="text" class="form-control" name="category" v-model="newCategoryName">
+          <hr>
+          <button type="button" class="btn btn-primary" @click="saveCustomCategory()">Save</button>
+          <button type="button" class="btn btn-link" @click="toggleView()">cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" v-else>
+      <div class="card-body"><h3 class="text-center">Righteous!</h3></div>
     </div>
 
   </div>
 </template>
 
 <script>
-  import { usersRef, categoriesRef, firebase, FB } from '../lib/firebase';
+  import { usersRef,
+          categoriesRef,
+          bookmarksRef,
+          heyGoogleLogin,
+          heyGoogleLogout,
+          heyGoogleWhatsMyAuthState } from '../lib/firebase';
+
   import faker from 'faker'
 
   export default {
-    name: 'tab-component',
-    firebase: {
-      categories: categoriesRef
-    },
+    name: 'popup-component',
     data () {
       return {
-        selected: null,
         isAddingCustom: false,
+        isSaving: false,
+        isSaved: false,
         newCategoryName: '',
         user: null,
         category: null,
-        label: faker.commerce.department(),
-        title: faker.company.companyName(),
-        url: faker.internet.url(),
-        favIconUrl: faker.image.avatar()
+        label: '',
+        bookmark: {
+          title: faker.company.companyName(),
+          url: faker.internet.url(),
+          favIconUrl: faker.image.avatar()
+        },
+        categories: []
       }
     },
     methods: {
-      isSelected: function (i) {
-        return i === this.selected
-      },
       login: function () {
-        var self = this
-        var provider = new FB.auth.GoogleAuthProvider();
-        provider.addScope('https://www.googleapis.com/auth/contacts.readonly');
-        firebase.auth().signInWithPopup(provider).then(function(result) {
-          var token = result.credential.accessToken;
-          var user = result.user;
-
-          self.user = {
-            token: token,
-            uid: user.uid,
-            email: user.email,
-            displayName: user.displayName,
-            photoURL: user.photoURL }
-
-          console.log(self.user)
-
-        }).catch(function(error) {
-          console.log('error => ',error)
-        });
+        heyGoogleLogin((user)=>{
+          this.user = user
+        })
       },
       logout: function () {
-        var self = this
-        firebase.auth().signOut().then(function(signOut) {
-          self.user = null
-        }).catch(function(error) {
-          console.log('error => ',error)
-        });
-      },
-      chooseFromUserCategories: function (category, index) {
-        this.selected = index
-        var object = {
-          label: category.label,
-          slug: category.slug,
-          owner: this.user.uid,
-        }
-        categoriesRef.child(category['.key']).push(this.bookMarkObject())
+        heyGoogleLogout((user)=>{
+          this.user = user
+        })
       },
       toggleView: function () {
         this.isAddingCustom = !this.isAddingCustom
       },
-      saveCustomCategory: function () {
-        var object = {
-          label: this.newCategoryName,
-          slug: this.newCategoryName.replace(/\s/g, '_').toLowerCase() ,
+      chooseFromUserCategories: function (category, index) {
+        var self = this
+        self.isSaving = !self.isSaving
+        var newCategoryObject = {
+          label: category.label,
+          slug: category.slug,
           owner: this.user.uid,
         }
-        categoriesRef.push(object).child(object.label).push(this.bookMarkObject())
+        categoriesRef.child(category.key).once('value', function(snapshot) {
+          bookmarksRef.push(self.bookMarkObject(category.key))
+          self.isSaved = !self.isSaved
+          window.close()
+        })
+      },
+      saveCustomCategory: function () {
+        var self = this
+        self.isSaving = !self.isSaving
+        var newCategoryObject = {
+          label: this.newCategoryName,
+          slug: this.newCategoryName.replace(/\s/g, '_').toLowerCase(),
+          owner: this.user.uid
+        }
+
+        categoriesRef.push(newCategoryObject).then((category)=>{
+          bookmarksRef.push(self.bookMarkObject(category.key))
+          self.isSaved = !self.isSaved
+          window.close()
+        })
+
         this.newCategoryName = ''
         this.isAddingCustom = !this.isAddingCustom
       },
-      bookMarkObject: function(){
+      bookMarkObject: function(key){
         return {
-          title: this.title,
-          url: this.url,
-          favIconUrl: this.favIconUrl
+          category_key: key,
+          title: this.bookmark.title,
+          url: this.bookmark.url,
+          favIconUrl: this.bookmark.favIconUrl
         }
       }
     },
     mounted: function () {
       var self = this
-      var queryInfo = {
-      active: true,
-      currentWindow: true }
-
-      firebase.auth().onAuthStateChanged(function(user) {
-        if (user) {
-          self.user = {
-            uid: user.uid,
-            email: user.email,
-            displayName: user.displayName,
-            photoURL: user.photoURL }
-
-          usersRef.child(user.uid).once('uid').then((snapshot)=>{
-            console.log('snapshot', snapshot)
+      heyGoogleWhatsMyAuthState((user) => {
+        self.user = user
+        self.categories = [] // Reset the categories when the session changes
+        categoriesRef.orderByChild('owner').equalTo(self.user.uid).on('value', (snapshot) => {
+          snapshot.forEach((child)=>{
+            self.categories.push({
+              key: child.key,
+              label: child.val().label,
+              owner: child.val().owner,
+              slug: child.val().slug
+            })
           })
-          chrome.tabs.query(queryInfo, (tabs) => {
-            this.url = tabs[0].url
-            this.title = tabs[0].title
-            this.favIconUrl = tabs[0].favIconUrl
-          })
-        }
-
+        })
       })
+
+      // For Tabs
+      if (chrome.tabs !== undefined) {
+        var queryInfo = {
+        active: true,
+        currentWindow: true }
+        chrome.tabs.query(queryInfo, (tabs) => {
+          this.bookmark.url = tabs[0].url
+          this.bookmark.title = tabs[0].title
+          this.bookmark.favIconUrl = tabs[0].favIconUrl
+        })
+      }
     }
   }
 </script>
 
 <style lang="scss">
-  #tab-component {
+  #popup-component {
     width: 280px;
   }
 </style>
