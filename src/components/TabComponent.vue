@@ -25,10 +25,10 @@
     <div class="container-fluid">
       <div class="row">
         <div class="col" v-for="(category, index) in categories">
-          <div class="card" style="width: 20rem;">
+          <div class="card category-card" style="width: 20rem;">
             <div class="card-body">
               <h4 class="card-title">
-                {{ category.label }}
+                {{ category.label.trunc(20) }}
                 <span class="badge badge-danger">{{ category.slug }}</span>
               </h4>
               <p class="card-text">
@@ -37,7 +37,10 @@
             </div>
             <ul class="list-group list-group-flush">
               <li v-for="(bookmark, index) in category.bookmarks" class="list-group-item">
-                <a :href="bookmark.url">{{ bookmark.title }}</a>
+                <a :href="bookmark.url">
+                  <img :src="bookmark.favIconUrl" width="20"/>
+                  {{ bookmark.title.trunc(30) }}
+                </a>
               </li>
             </ul>
           </div>
@@ -56,6 +59,7 @@
           heyGoogleWhatsMyAuthState } from '../lib/firebase';
 
   import faker from 'faker'
+  import '../lib/String'
 
   export default {
     name: 'tab-component',
@@ -148,6 +152,9 @@
 
 <style lang="scss">
   #tab-component {
-
+    .category-card .list-group {
+      max-height: 300px;
+      overflow-y: auto;
+    }
   }
 </style>
