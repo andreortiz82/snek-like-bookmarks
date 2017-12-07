@@ -87,10 +87,10 @@
           slug: category.slug,
           owner: this.user.uid,
         }
-        categoriesRef.child(category.key).once('value', function(snapshot) {
-          bookmarksRef.push(self.bookMarkObject(category.key))
+        categoriesRef.child(category.key).child('bookmarks').push().then((bookmark)=>{
+          bookmark.set(self.bookMarkObject(bookmark.key))
           self.isSaved = !self.isSaved
-          window.close()
+          // window.close()
         })
       },
       saveCustomCategory: function () {
@@ -99,21 +99,20 @@
         var newCategoryObject = {
           label: this.newCategoryName,
           slug: this.newCategoryName.replace(/\s/g, '_').toLowerCase(),
-          owner: this.user.uid
-        }
-
+          owner: this.user.uid }
         categoriesRef.push(newCategoryObject).then((category)=>{
-          bookmarksRef.push(self.bookMarkObject(category.key))
-          self.isSaved = !self.isSaved
-          window.close()
+          categoriesRef.child(category.key).child('bookmarks').push().then((bookmark)=>{
+            bookmark.set(self.bookMarkObject(bookmark.key))
+            self.isSaved = !self.isSaved
+            // window.close()
+          })
         })
-
         this.newCategoryName = ''
         this.isAddingCustom = !this.isAddingCustom
       },
       bookMarkObject: function(key){
         return {
-          category_key: key,
+          key: key,
           title: this.bookmark.title,
           url: this.bookmark.url,
           favIconUrl: this.bookmark.favIconUrl
@@ -124,8 +123,8 @@
       var self = this
       heyGoogleWhatsMyAuthState((user) => {
         self.user = user
-        self.categories = [] // Reset the categories when the session changes
         categoriesRef.orderByChild('owner').equalTo(self.user.uid).on('value', (snapshot) => {
+          self.categories = [] // Reset the categories when the session changes
           snapshot.forEach((child)=>{
             self.categories.push({
               key: child.key,
@@ -136,7 +135,6 @@
           })
         })
       })
-
       // For Tabs
       if (chrome.tabs !== undefined) {
         var queryInfo = {
@@ -151,9 +149,6 @@
     }
   }
 </script>
-
 <style lang="scss">
-  #popup-component {
-    width: 280px;
-  }
+  #popup-component { width: 280px; }
 </style>

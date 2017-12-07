@@ -1,11 +1,11 @@
 <template>
   <div id="tab-component">
+    <Popup/>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
       <a class="navbar-brand" href="#">Magpie Bookmarks</a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
-
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
           <li class="nav-item" v-if="user === null">
@@ -21,7 +21,6 @@
         </form>
       </div>
     </nav>
-
     <div class="container-fluid">
       <div class="row mt-5">
         <div class="col" v-for="(category, index) in categories">
@@ -37,13 +36,10 @@
                 <div class="d-flex justify-content-between align-items-center">
                   <a :href="bookmark.url">
                     <img :src="bookmark.favIconUrl" width="20"/>
-                    <!-- {{ bookmark.title.trunc(30) }} -->
-                    {{ bookmark.key }}
+                    {{ bookmark.title.trunc(30) }}
                   </a>
-
                   <a class="text-danger" href="#" @click="deleteBookmark(category, bookmark.key, bindex)">&times;</a>
                 </div>
-
               </li>
             </ul>
           </div>
@@ -52,22 +48,20 @@
     </div>
   </div>
 </template>
-
 <script>
   import { usersRef,
           categoriesRef,
-          bookmarksRef,
+          db,
           heyGoogleLogin,
           heyGoogleLogout,
           heyGoogleWhatsMyAuthState } from '../lib/firebase';
-
   import faker from 'faker'
   import '../lib/String'
-
+  import Popup from './PopUpComponent.vue'
   export default {
     name: 'tab-component',
     props: [],
-    components: { },
+    components: { Popup },
     data () {
       return {
         isAddingCustom: false,
@@ -97,69 +91,52 @@
         })
       },
       deleteBookmark: function (category, key, index) {
-        category.bookmarks.splice(index, 1)
-        bookmarksRef.child(key).remove()
-
+        var bookmark = categoriesRef.child(category.key)
+        bookmark.child('bookmarks').child(key).remove()
+        event.preventDefault()
       },
       deleteCategory: function (key, index) {
-        this.categories.splice(index, 1)
-        bookmarksRef.orderByChild('category_key').equalTo(key).on('value', (snapshot) => {
-          snapshot.forEach((child) => {
-            bookmarksRef.child(child.key).remove()
-          })
-        })
-        categoriesRef.child(key).remove()
+        var deleteConfirm = confirm('Are you Sure?')
+        if (deleteConfirm) {
+          this.categories.splice(index, 1)
+          categoriesRef.child(key).remove()
+        }
+      },
+      getTabInfo: function () {
+        if (chrome.tabs !== undefined) {
+          var queryInfo = {
+          active: true,
+          currentWindow: true }
+          chrome.tabs.query(queryInfo, (tabs) => {
+            this.bookmark.url = tabs[0].url
+            this.bookmark.title = tabs[0].title
+            this.bookmark.favIconUrl = tabs[0].favIconUrl })
+        }
       }
     },
     mounted: function () {
       var self = this
+      self.getTabInfo()
+      self.categories = [] // Reset the categories when the session changes
       heyGoogleWhatsMyAuthState((user) => {
-
         self.user = user
-        self.categories = [] // Reset the categories when the session changes
-        var bookmarksInCategory = [] // Reset the bookmarks when the session changes
-
         // Grab the Categories
-        categoriesRef.orderByChild('owner').equalTo(self.user.uid).once('value', (snapshot) => {
-          console.log('mounted:categoriesRef:loop')
-          bookmarksInCategory = []
-          snapshot.forEach((cChild)=>{
-            // Grab the Bookmarks
-            bookmarksRef.orderByChild('category_key').equalTo(cChild.key).on('value', (snapshot) => {
-              console.log('mounted:bookmarksRef:loop')
-              snapshot.forEach((bChild) => {
-                bookmarksInCategory.push({
-                  key: bChild.key,
-                  title: bChild.val().title,
-                  url: bChild.val().url,
-                  favIconUrl: bChild.val().favIconUrl,
-                  category_key: cChild.key
-                })
-              })
-            })
-
+        categoriesRef.orderByChild('owner').equalTo(self.user.uid).on('value', (cSnapshot)=>{
+          self.categories = []
+          cSnapshot.forEach((data)=> {
+            // Runs for each found
             self.categories.push({
-              key: cChild.key,
-              label: cChild.val().label,
-              owner: cChild.val().owner,
-              slug: cChild.val().slug,
-              bookmarks: bookmarksInCategory
+              key: data.key,
+              label: data.val().label,
+              owner: data.val().owner,
+              slug: data.val().slug,
+              bookmarks: data.val().bookmarks
             })
           })
         })
+      // -------------------
+      // End - heyGoogleWhatsMyAuthState
       })
-
-      // For Tabs
-      if (chrome.tabs !== undefined) {
-        var queryInfo = {
-        active: true,
-        currentWindow: true }
-        chrome.tabs.query(queryInfo, (tabs) => {
-          this.bookmark.url = tabs[0].url
-          this.bookmark.title = tabs[0].title
-          this.bookmark.favIconUrl = tabs[0].favIconUrl
-        })
-      }
     },
     updated: function () {},
     destroyed: function () {}

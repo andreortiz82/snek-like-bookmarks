@@ -11,8 +11,8 @@
     "copyManifest": "cp -v manifest.json ./dist/manifest.json && echo ok",
     "copyIndex": "cp -v ./templates/index.html ./dist/index.html && echo ok",
     "copyPopup": "cp -v ./templates/popup.html ./dist/popup.html && echo ok",
-    "copyBundle": "npm run copyManifest && npm run copyIndex && npm run copyPopup && npm run copyPopupJS && npm run copyFavicon",
-    "build": "cross-env NODE_ENV=production webpack --progress --hide-modules && copyBundle"
+    "copyBundle": "npm run copyManifest && npm run copyIndex && npm run copyPopup && npm run copyFavicon",
+    "build": "cross-env NODE_ENV=production webpack --progress --hide-modules && npm run copyBundle"
   },
   "dependencies": {
     "axios": "^0.17.1",
