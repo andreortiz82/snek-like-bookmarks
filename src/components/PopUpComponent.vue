@@ -7,9 +7,6 @@
             <li class="nav-item" v-if="user === null">
               <a href="#" class="nav-link" @click="login()">Login</a>
             </li>
-            <li class="nav-item" v-else>
-              <a href="#" class="nav-link" @click="logout()">Logout</a>
-            </li>
           </ul>
         </header>
 

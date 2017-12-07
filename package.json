@@ -7,11 +7,12 @@
   "private": true,
   "scripts": {
     "dev": "cross-env NODE_ENV=development webpack-dev-server --open --hot",
+    "copyFavicon": "cp -v favicon.ico ./dist/favicon.ico && echo ok",
     "copyManifest": "cp -v manifest.json ./dist/manifest.json && echo ok",
     "copyIndex": "cp -v ./templates/index.html ./dist/index.html && echo ok",
     "copyPopup": "cp -v ./templates/popup.html ./dist/popup.html && echo ok",
-    "copyPopupJS": "echo skipped",
-    "build": "cross-env NODE_ENV=production webpack --progress --hide-modules && npm run copyManifest && npm run copyIndex && npm run copyPopup && npm run copyPopupJS"
+    "copyBundle": "npm run copyManifest && npm run copyIndex && npm run copyPopup && npm run copyPopupJS && npm run copyFavicon",
+    "build": "cross-env NODE_ENV=production webpack --progress --hide-modules && copyBundle"
   },
   "dependencies": {
     "axios": "^0.17.1",
