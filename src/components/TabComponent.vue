@@ -1,50 +1,25 @@
 <template>
   <div id="tab-component">
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <a class="navbar-brand" href="#">Magpie Bookmarks</a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav mr-auto">
-          <li class="nav-item" v-if="user === null">
-            <a href="#" class="nav-link" @click="login()">Login</a>
-          </li>
-          <li class="nav-item" v-else>
-            <a href="#" class="nav-link" @click="logout()"><img class="mr-3" :src="user.photoURL" width="40"/>Hi {{user.displayName}}!</a>
-          </li>
-        </ul>
-        <form class="form-inline my-2 my-lg-0">
-          <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
-          <button class="btn btn-primary my-2 my-sm-0" type="submit">Search</button>
-        </form>
-      </div>
-    </nav>
-    <div class="container-fluid">
-      <div class="row mt-5">
-        <div class="col" v-for="(category, index) in categories">
-          <div class="category-card" style="width: 20rem;">
-            <div class="card-body">
-              <div class="d-flex justify-content-between align-items-center">
-                <h4 class="card-title">{{ category.label.trunc(20) }}</h4>
-                <a class="text-danger" href="#" @click="deleteCategory(category.key, index)">&times;</a>
-              </div>
-            </div>
-            <ul class="list-group list-group-flush">
-              <li v-for="(bookmark, bindex) in category.bookmarks" class="list-group-item">
-                <div class="d-flex justify-content-between align-items-center">
-                  <a :href="bookmark.url">
-                    <img :src="bookmark.favIconUrl" width="20"/>
-                    {{ bookmark.title.trunc(30) }}
-                  </a>
-                  <a class="text-danger" href="#" @click="deleteBookmark(category, bookmark.key, bindex)">&times;</a>
-                </div>
-              </li>
-            </ul>
+    <NavigationBar :user="user" :loginAction="login" :logoutAction="logout"/>
+    <div id="favorites-bar" class="container-fluid">
+      <div class="row">
+        <div class="col">
+          <div class="card icon">
+            <div class="card-body"><a href="#" data-toggle="modal" data-target="#add-bookmark-modal">+</a></div>
           </div>
         </div>
       </div>
     </div>
+    <div id="category-list" class="container-fluid">
+      <div class="row">
+        <div class="col-3" v-for="(category, index) in categories">
+          <CategoryCard :category="category" :index="index" :deleteBookmarkAction="deleteBookmark" :deleteCategoryAction="deleteCategory"/>
+        </div>
+      </div>
+    </div>
+
+    <AddCategoryModal :saveCategoryAction="saveCategory" ref="AddCategoryModalRef"/>
+    <AddBookmarkModal :saveBookmarkAction="saveBookmark" ref="AddBookmarkModalRef"/>
   </div>
 </template>
 <script>
@@ -54,10 +29,18 @@
           heyGoogleLogin,
           heyGoogleLogout,
           heyGoogleWhatsMyAuthState } from '../lib/firebase';
+
   import faker from 'faker'
   import '../lib/String'
+
+  import CategoryCard from './CategoryCard.vue'
+  import NavigationBar from './NavigationBar.vue'
+  import AddCategoryModal from './AddCategoryModal.vue'
+  import AddBookmarkModal from './AddBookmarkModal.vue'
+
   export default {
     name: 'tab-component',
+    components: { CategoryCard, NavigationBar, AddCategoryModal, AddBookmarkModal },
     props: [],
     data () {
       return {
@@ -109,6 +92,35 @@
             this.bookmark.title = tabs[0].title
             this.bookmark.favIconUrl = tabs[0].favIconUrl })
         }
+      },
+      saveCategory: function (value) {
+        var newCategoryObject = {
+          label: value,
+          isFavorite: false,
+          slug: value.replace(/\s/g, '_').toLowerCase(),
+          owner: this.user.uid }
+        categoriesRef.push().then((category)=>{
+          category.set(newCategoryObject)
+          $('#add-category-modal').modal('hide')
+          this.$refs.AddCategoryModalRef.newCategoryName = ''
+        })
+      },
+      saveBookmark: function (categoryKey, title, url, favIconUrl) {
+        categoriesRef.child(categoryKey).child('bookmarks').push().then((bookmark)=>{
+          var bookMarkObject = {
+            title: title,
+            url: url,
+            favIconUrl: favIconUrl,
+            isFavorite: false,
+            key: bookmark.key }
+
+          bookmark.set(bookMarkObject)
+          $('#add-bookmark-modal').modal('hide')
+          this.$refs.AddBookmarkModalRef.title = ''
+          this.$refs.AddBookmarkModalRef.url = ''
+          this.$refs.AddBookmarkModalRef.favIconUrl = ''
+          this.$refs.AddBookmarkModalRef.categoryKey = ''
+        })
       }
     },
     mounted: function () {
@@ -134,6 +146,11 @@
       // -------------------
       // End - heyGoogleWhatsMyAuthState
       })
+
+      $('#add-bookmark-modal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget)
+        var categoryKey = button.data('category-key')
+        self.$refs.AddBookmarkModalRef.categoryKey = categoryKey })
     },
     updated: function () {},
     destroyed: function () {}
@@ -143,6 +160,14 @@
 
 <style lang="scss">
   #tab-component {
+    #favorites-bar {
+      margin: 20px 0;
+    }
+    #favorites-bar .card.icon {
+      width: 70px;
+      height: 70px;
+      text-align: center;
+    }
     .category-card { margin-bottom: 20px; }
     .category-card .list-group {
       max-height: 300px;

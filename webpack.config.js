@@ -78,6 +78,14 @@ module.exports = {
     },
     extensions: ['*', '.js', '.vue', '.json']
   },
+  plugins: [
+    new webpack.ProvidePlugin({
+      $: 'jquery',
+      jquery: 'jquery',
+      'window.jQuery': 'jquery',
+      jQuery: 'jquery'
+    })
+  ],
   devServer: {
     historyApiFallback: true,
     noInfo: true,

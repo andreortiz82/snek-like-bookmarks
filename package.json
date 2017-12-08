@@ -19,6 +19,7 @@
     "bootstrap": "^4.0.0-beta.2",
     "faker": "^4.1.0",
     "firebase": "^4.7.0",
+    "jquery": "^3.2.1",
     "underscore": "^1.8.3",
     "vue": "^2.4.4",
     "vue-ls": "^2.3.3",
