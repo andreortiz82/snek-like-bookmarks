@@ -1,6 +1,5 @@
 <template>
   <div id="tab-component">
-    <Popup/>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
       <a class="navbar-brand" href="#">Magpie Bookmarks</a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -57,11 +56,9 @@
           heyGoogleWhatsMyAuthState } from '../lib/firebase';
   import faker from 'faker'
   import '../lib/String'
-  import Popup from './PopUpComponent.vue'
   export default {
     name: 'tab-component',
     props: [],
-    components: { Popup },
     data () {
       return {
         isAddingCustom: false,

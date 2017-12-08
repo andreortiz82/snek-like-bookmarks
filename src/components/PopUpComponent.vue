@@ -58,6 +58,7 @@
         category: null,
         label: '',
         bookmark: {
+          isFavorite: false,
           title: faker.company.companyName(),
           url: faker.internet.url(),
           favIconUrl: faker.image.avatar()
@@ -112,6 +113,7 @@
       },
       bookMarkObject: function(key){
         return {
+          isFavorite: false,
           key: key,
           title: this.bookmark.title,
           url: this.bookmark.url,
