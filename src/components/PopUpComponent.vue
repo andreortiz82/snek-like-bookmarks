@@ -57,6 +57,8 @@
         user: null,
         category: null,
         label: '',
+        isFavorite: false,
+
         bookmark: {
           isFavorite: false,
           title: faker.company.companyName(),
@@ -85,13 +87,14 @@
         self.isSaving = !self.isSaving
         var newCategoryObject = {
           label: category.label,
+          isFavorite: false,
           slug: category.slug,
           owner: this.user.uid,
         }
         categoriesRef.child(category.key).child('bookmarks').push().then((bookmark)=>{
           bookmark.set(self.bookMarkObject(bookmark.key))
           self.isSaved = !self.isSaved
-          // window.close()
+          window.close()
         })
       },
       saveCustomCategory: function () {
@@ -99,13 +102,14 @@
         self.isSaving = !self.isSaving
         var newCategoryObject = {
           label: this.newCategoryName,
+          isFavorite: false,
           slug: this.newCategoryName.replace(/\s/g, '_').toLowerCase(),
           owner: this.user.uid }
         categoriesRef.push(newCategoryObject).then((category)=>{
           categoriesRef.child(category.key).child('bookmarks').push().then((bookmark)=>{
             bookmark.set(self.bookMarkObject(bookmark.key))
             self.isSaved = !self.isSaved
-            // window.close()
+            window.close()
           })
         })
         this.newCategoryName = ''
