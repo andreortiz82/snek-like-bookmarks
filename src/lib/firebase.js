@@ -14,6 +14,7 @@ export const firebase = app
 export const db = app.database()
 export const usersRef = db.ref('/users')
 export const categoriesRef = db.ref('/categories')
+export const favoritesRef = db.ref('/favorites')
 
 export const userCategories = function(userID, callback){
   categoriesRef.orderByChild('owner').equalTo(userID).on('value', (snapshot) => {

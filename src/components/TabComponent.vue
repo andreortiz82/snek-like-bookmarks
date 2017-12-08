@@ -2,10 +2,15 @@
   <div id="tab-component">
     <NavigationBar :user="user" :loginAction="login" :logoutAction="logout"/>
     <div id="favorites-bar" class="container-fluid">
-      <div class="row">
-        <div class="col">
-          <div class="card icon">
-            <div class="card-body"><a href="#" data-toggle="modal" data-target="#add-bookmark-modal">+</a></div>
+      <div class="card">
+        <div class="card-body">
+          <h5>Favorites</h5>
+          <div class="row">
+            <div class="col-1" v-for="favorite in favorites">
+              <a :href="favorite.url">
+                <img :src="favorite.favIconUrl" width="40"/>
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -20,11 +25,13 @@
 
     <AddCategoryModal :saveCategoryAction="saveCategory" ref="AddCategoryModalRef"/>
     <AddBookmarkModal :saveBookmarkAction="saveBookmark" ref="AddBookmarkModalRef"/>
+
   </div>
 </template>
 <script>
   import { usersRef,
           categoriesRef,
+          favoritesRef,
           db,
           heyGoogleLogin,
           heyGoogleLogout,
@@ -56,7 +63,8 @@
           url: faker.internet.url(),
           favIconUrl: faker.image.avatar()
         },
-        categories: []
+        categories: [],
+        favorites: []
       }
     },
     methods: {
@@ -121,6 +129,9 @@
           this.$refs.AddBookmarkModalRef.favIconUrl = ''
           this.$refs.AddBookmarkModalRef.categoryKey = ''
         })
+      },
+      setCategoryAsFavorite: function (category) {
+
       }
     },
     mounted: function () {
@@ -134,13 +145,19 @@
           self.categories = []
           cSnapshot.forEach((data)=> {
             // Runs for each found
-            self.categories.push({
-              key: data.key,
-              label: data.val().label,
-              owner: data.val().owner,
-              slug: data.val().slug,
-              bookmarks: data.val().bookmarks
-            })
+            if(!data.val().isFavorite) {
+              self.categories.push({
+                key: data.key,
+                isFavorite: data.val().isFavorite,
+                label: data.val().label,
+                owner: data.val().owner,
+                slug: data.val().slug,
+                bookmarks: data.val().bookmarks
+              })
+            } else {
+              self.favorites = data.val().bookmarks
+            }
+
           })
         })
       // -------------------
