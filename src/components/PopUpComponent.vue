@@ -11,8 +11,12 @@
         </header>
 
         <section v-if="user != null">
-          <div class="list-group">
+          <div class="list-group-categories">
             <a :key="index" v-for="(category, index) in categories" class="list-group-item" @click="chooseFromUserCategories(category, index)">{{ category.label }}</a>
+          </div>
+        </section>
+        <section v-if="user != null">
+          <div class="list-group">
             <a href="#" class="list-group-item" @click="toggleView()">+ Add Category</a>
           </div>
         </section>
@@ -94,7 +98,7 @@
         categoriesRef.child(category.key).child('bookmarks').push().then((bookmark)=>{
           bookmark.set(self.bookMarkObject(bookmark.key))
           self.isSaved = !self.isSaved
-          window.close()
+          if (chrome.tabs !== undefined) { window.close() }
         })
       },
       saveCustomCategory: function () {
@@ -109,7 +113,7 @@
           categoriesRef.child(category.key).child('bookmarks').push().then((bookmark)=>{
             bookmark.set(self.bookMarkObject(bookmark.key))
             self.isSaved = !self.isSaved
-            window.close()
+            if (chrome.tabs !== undefined) { window.close() }
           })
         })
         this.newCategoryName = ''
@@ -157,4 +161,8 @@
 </script>
 <style lang="scss">
   #popup-component { width: 280px; }
+  #popup-component .list-group-categories {
+    height: 300px;
+    overflow-y: auto;
+  }
 </style>

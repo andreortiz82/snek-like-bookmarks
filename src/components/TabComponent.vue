@@ -1,5 +1,6 @@
 <template>
   <div id="tab-component">
+    <PopUp/>
     <NavigationBar :user="user" :loginAction="login" :logoutAction="logout"/>
     <div id="favorites-bar" class="container-fluid">
       <div class="card">
@@ -44,10 +45,11 @@
   import NavigationBar from './NavigationBar.vue'
   import AddCategoryModal from './AddCategoryModal.vue'
   import AddBookmarkModal from './AddBookmarkModal.vue'
+  import PopUp from './PopUpComponent.vue'
 
   export default {
     name: 'tab-component',
-    components: { CategoryCard, NavigationBar, AddCategoryModal, AddBookmarkModal },
+    components: { CategoryCard, NavigationBar, AddCategoryModal, AddBookmarkModal, PopUp },
     props: [],
     data () {
       return {
