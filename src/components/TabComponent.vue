@@ -1,20 +1,7 @@
 <template>
   <div id="tab-component">
     <NavigationBar :user="user" :loginAction="authenticate" :logoutAction="authenticate"/>
-    <div id="favorites-bar" class="container-fluid">
-      <div class="card">
-        <div class="card-body">
-          <h5>Favorites</h5>
-          <div class="row">
-            <div class="col-1" v-for="favorite in favorites">
-              <a :href="favorite.url">
-                <img :src="favorite.favIconUrl" width="40"/>
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+
     <div id="category-list" class="container-fluid">
       <div class="row">
         <div class="col-3" v-for="(category, index) in categories">
@@ -22,10 +9,8 @@
         </div>
       </div>
     </div>
-
     <AddCategoryModal :saveCategoryAction="saveCategory" ref="AddCategoryModalRef"/>
     <AddBookmarkModal :saveBookmarkAction="saveBookmark" ref="AddBookmarkModalRef"/>
-
   </div>
 </template>
 <script>

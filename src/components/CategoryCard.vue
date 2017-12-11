@@ -3,7 +3,16 @@
     <div class="card-body">
       <div class="d-flex justify-content-between align-items-center">
         <h4 class="card-title">{{ category.label.trunc(20) }}</h4>
-        <a class="text-danger" href="#" @click="deleteCategoryAction(category.key)">&times;</a>
+        <div class="dropdown">
+          <button class="btn btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="fa fa-cog"></i>
+          </button>
+          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            <a class="dropdown-item" href="#">Edit</a>
+            <a class="dropdown-item" href="#" @click="deleteCategoryAction(category.key)">Delete</a>
+          </div>
+        </div>
+
       </div>
     </div>
     <ul class="list-group list-group-flush">
@@ -13,7 +22,16 @@
             <img :src="bookmark.favIconUrl" width="20"/>
             {{ bookmark.title.trunc(30) }}
           </a>
-          <a class="text-danger" href="#" @click="deleteBookmarkAction(category.key, bookmark.key)">&times;</a>
+
+          <div class="dropdown">
+            <button class="btn btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              <i class="fa fa-cog"></i>
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+              <a class="dropdown-item" href="#">Edit</a>
+              <a class="dropdown-item" href="#" @click="deleteBookmarkAction(category.key, bookmark.key)">Delete</a>
+            </div>
+          </div>
         </div>
       </li>
       <li>
