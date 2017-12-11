@@ -8,10 +8,10 @@
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
           <li class="nav-item" v-if="user === null">
-            <a href="#" class="nav-link" @click="loginAction">Login</a>
+            <a href="#" class="nav-link" @click="loginAction(true)">Login</a>
           </li>
           <li class="nav-item" v-else>
-            <a href="#" class="nav-link" @click="logoutAction"><img class="mr-3" :src="user.photoURL" width="40"/>Hi {{user.displayName}}!</a>
+            <a href="#" class="nav-link" @click="logoutAction(false)"><img class="mr-3" :src="user.photoURL" width="40"/>Hi {{user.displayName}}!</a>
           </li>
         </ul>
         <ul class="navbar-nav ">

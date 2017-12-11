@@ -1,7 +1,6 @@
 <template>
   <div id="tab-component">
-    <PopUp/>
-    <NavigationBar :user="user" :loginAction="login" :logoutAction="logout"/>
+    <NavigationBar :user="user" :loginAction="authenticate" :logoutAction="authenticate"/>
     <div id="favorites-bar" class="container-fluid">
       <div class="card">
         <div class="card-body">
@@ -19,7 +18,7 @@
     <div id="category-list" class="container-fluid">
       <div class="row">
         <div class="col-3" v-for="(category, index) in categories">
-          <CategoryCard :category="category" :index="index" :deleteBookmarkAction="deleteBookmark" :deleteCategoryAction="deleteCategory"/>
+          <CategoryCard :category="category" :index="index" :deleteBookmarkAction="doDeleteBookmark" :deleteCategoryAction="doDeleteCategory"/>
         </div>
       </div>
     </div>
@@ -30,14 +29,15 @@
   </div>
 </template>
 <script>
-  import { usersRef,
-          categoriesRef,
-          favoritesRef,
-          db,
-          heyGoogleLogin,
-          heyGoogleLogout,
-          heyGoogleWhatsMyAuthState } from '../lib/firebase';
-
+  import {
+    heyGoogleLogin,
+    heyGoogleLogout,
+    heyGoogleWhatsMyAuthState,
+    getAllCategories,
+    saveCategory,
+    deleteCategory,
+    saveBookmark,
+    deleteBookmark } from '../lib/firebase';
   import faker from 'faker'
   import '../lib/String'
 
@@ -45,11 +45,10 @@
   import NavigationBar from './NavigationBar.vue'
   import AddCategoryModal from './AddCategoryModal.vue'
   import AddBookmarkModal from './AddBookmarkModal.vue'
-  import PopUp from './PopUpComponent.vue'
 
   export default {
     name: 'tab-component',
-    components: { CategoryCard, NavigationBar, AddCategoryModal, AddBookmarkModal, PopUp },
+    components: { CategoryCard, NavigationBar, AddCategoryModal, AddBookmarkModal },
     props: [],
     data () {
       return {
@@ -70,27 +69,33 @@
       }
     },
     methods: {
-      login: function () {
-        heyGoogleLogin((user)=>{
-          this.user = user
-        })
+      authenticate: function (bool) {
+        var self = this
+        if (bool) {
+          heyGoogleLogin((user)=>{
+            self.user = user
+            getAllCategories(self.user, (mySavedDataCollection)=>{
+              self.categories = mySavedDataCollection
+            })
+          })
+        } else {
+          heyGoogleLogout((user)=>{
+            self.categories = []
+            self.user = user
+          })
+        }
       },
-      logout: function () {
-        heyGoogleLogout((user)=>{
-          this.user = user
-        })
-      },
-      deleteBookmark: function (category, key, index) {
-        var bookmark = categoriesRef.child(category.key)
-        bookmark.child('bookmarks').child(key).remove()
+      doDeleteBookmark: function (categoryKey, bookmarkKey) {
+        if(confirm('Are you sure?')){
+          deleteBookmark(categoryKey, bookmarkKey, ()=>{})
+        }
         event.preventDefault()
       },
-      deleteCategory: function (key, index) {
-        var deleteConfirm = confirm('Are you Sure?')
-        if (deleteConfirm) {
-          this.categories.splice(index, 1)
-          categoriesRef.child(key).remove()
+      doDeleteCategory: function (categoryKey) {
+        if(confirm('Are you sure?')){
+          deleteCategory(categoryKey, ()=>{})
         }
+        event.preventDefault()
       },
       getTabInfo: function () {
         if (chrome.tabs !== undefined) {
@@ -109,61 +114,35 @@
           isFavorite: false,
           slug: value.replace(/\s/g, '_').toLowerCase(),
           owner: this.user.uid }
-        categoriesRef.push().then((category)=>{
-          category.set(newCategoryObject)
+
+        saveCategory(newCategoryObject, (category) => {
           $('#add-category-modal').modal('hide')
           this.$refs.AddCategoryModalRef.newCategoryName = ''
         })
       },
       saveBookmark: function (categoryKey, title, url, favIconUrl) {
-        categoriesRef.child(categoryKey).child('bookmarks').push().then((bookmark)=>{
-          var bookMarkObject = {
+        var bookMarkObject = {
             title: title,
             url: url,
             favIconUrl: favIconUrl,
-            isFavorite: false,
-            key: bookmark.key }
+            isFavorite: false }
 
-          bookmark.set(bookMarkObject)
+        saveBookmark(categoryKey, bookMarkObject, () => {
           $('#add-bookmark-modal').modal('hide')
           this.$refs.AddBookmarkModalRef.title = ''
           this.$refs.AddBookmarkModalRef.url = ''
           this.$refs.AddBookmarkModalRef.favIconUrl = ''
           this.$refs.AddBookmarkModalRef.categoryKey = ''
         })
-      },
-      setCategoryAsFavorite: function (category) {
-
       }
     },
     mounted: function () {
       var self = this
-      self.getTabInfo()
-      self.categories = [] // Reset the categories when the session changes
-      heyGoogleWhatsMyAuthState((user) => {
+      heyGoogleWhatsMyAuthState((user)=>{
         self.user = user
-        // Grab the Categories
-        categoriesRef.orderByChild('owner').equalTo(self.user.uid).on('value', (cSnapshot)=>{
-          self.categories = []
-          cSnapshot.forEach((data)=> {
-            // Runs for each found
-            if(!data.val().isFavorite) {
-              self.categories.push({
-                key: data.key,
-                isFavorite: data.val().isFavorite,
-                label: data.val().label,
-                owner: data.val().owner,
-                slug: data.val().slug,
-                bookmarks: data.val().bookmarks
-              })
-            } else {
-              self.favorites = data.val().bookmarks
-            }
-
-          })
+        getAllCategories(self.user, (mySavedDataCollection)=>{
+          self.categories = mySavedDataCollection
         })
-      // -------------------
-      // End - heyGoogleWhatsMyAuthState
       })
 
       $('#add-bookmark-modal').on('show.bs.modal', function (event) {

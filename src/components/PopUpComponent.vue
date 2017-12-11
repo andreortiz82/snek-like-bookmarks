@@ -5,20 +5,17 @@
         <header>
           <ul class="nav">
             <li class="nav-item" v-if="user === null">
-              <a href="#" class="nav-link" @click="login()">Login</a>
+              <a href="#" class="nav-link" @click="authenticate(true)">Login</a>
             </li>
           </ul>
         </header>
-
         <section v-if="user != null">
           <div class="list-group-categories">
             <a :key="index" v-for="(category, index) in categories" class="list-group-item" @click="chooseFromUserCategories(category, index)">{{ category.label }}</a>
           </div>
         </section>
         <section v-if="user != null">
-          <div class="list-group">
-            <a href="#" class="list-group-item" @click="toggleView()">+ Add Category</a>
-          </div>
+          <button class="btn btn-primary" @click="toggleView()">+ Add Category</button>
         </section>
       </div>
 
@@ -41,14 +38,15 @@
 </template>
 
 <script>
-  import { usersRef,
-          categoriesRef,
-          bookmarksRef,
-          heyGoogleLogin,
-          heyGoogleLogout,
-          heyGoogleWhatsMyAuthState } from '../lib/firebase';
-
-  import faker from 'faker'
+  import {
+    heyGoogleLogin,
+    heyGoogleLogout,
+    heyGoogleWhatsMyAuthState,
+    getAllCategories,
+    saveCategory,
+    deleteCategory,
+    saveBookmark,
+    deleteBookmark } from '../lib/firebase';
 
   export default {
     name: 'popup-component',
@@ -62,41 +60,37 @@
         category: null,
         label: '',
         isFavorite: false,
-
         bookmark: {
           isFavorite: false,
-          title: faker.company.companyName(),
-          url: faker.internet.url(),
-          favIconUrl: faker.image.avatar()
+          title: '',
+          url: '',
+          favIconUrl: ''
         },
         categories: []
       }
     },
     methods: {
-      login: function () {
-        heyGoogleLogin((user)=>{
-          this.user = user
-        })
+      authenticate: function (bool) {
+        var self = this
+        if (bool) {
+          heyGoogleLogin((user)=>{
+            self.user = user
+            getAllCategories(self.user, (mySavedDataCollection)=>{
+              self.categories = mySavedDataCollection
+            })
+          })
+        } else {
+          heyGoogleLogout((user)=>{
+            self.categories = []
+            self.user = user
+          })
+        }
       },
-      logout: function () {
-        heyGoogleLogout((user)=>{
-          this.user = user
-        })
-      },
-      toggleView: function () {
-        this.isAddingCustom = !this.isAddingCustom
-      },
+      toggleView: function () { this.isAddingCustom = !this.isAddingCustom },
       chooseFromUserCategories: function (category, index) {
         var self = this
         self.isSaving = !self.isSaving
-        var newCategoryObject = {
-          label: category.label,
-          isFavorite: false,
-          slug: category.slug,
-          owner: this.user.uid,
-        }
-        categoriesRef.child(category.key).child('bookmarks').push().then((bookmark)=>{
-          bookmark.set(self.bookMarkObject(bookmark.key))
+        saveBookmark(category.key, self.bookMarkObject(), ()=>{
           self.isSaved = !self.isSaved
           if (chrome.tabs !== undefined) { window.close() }
         })
@@ -108,10 +102,11 @@
           label: this.newCategoryName,
           isFavorite: false,
           slug: this.newCategoryName.replace(/\s/g, '_').toLowerCase(),
-          owner: this.user.uid }
-        categoriesRef.push(newCategoryObject).then((category)=>{
-          categoriesRef.child(category.key).child('bookmarks').push().then((bookmark)=>{
-            bookmark.set(self.bookMarkObject(bookmark.key))
+          owner: this.user.uid,
+          key: null }
+
+        saveCategory(newCategoryObject, (category)=>{
+          saveBookmark(category.key, self.bookMarkObject(), ()=>{
             self.isSaved = !self.isSaved
             if (chrome.tabs !== undefined) { window.close() }
           })
@@ -119,10 +114,9 @@
         this.newCategoryName = ''
         this.isAddingCustom = !this.isAddingCustom
       },
-      bookMarkObject: function(key){
+      bookMarkObject: function(){
         return {
           isFavorite: false,
-          key: key,
           title: this.bookmark.title,
           url: this.bookmark.url,
           favIconUrl: this.bookmark.favIconUrl
@@ -131,18 +125,10 @@
     },
     mounted: function () {
       var self = this
-      heyGoogleWhatsMyAuthState((user) => {
+      heyGoogleWhatsMyAuthState((user)=>{
         self.user = user
-        categoriesRef.orderByChild('owner').equalTo(self.user.uid).on('value', (snapshot) => {
-          self.categories = [] // Reset the categories when the session changes
-          snapshot.forEach((child)=>{
-            self.categories.push({
-              key: child.key,
-              label: child.val().label,
-              owner: child.val().owner,
-              slug: child.val().slug
-            })
-          })
+        getAllCategories(self.user, (mySavedDataCollection)=>{
+          self.categories = mySavedDataCollection
         })
       })
       // For Tabs
@@ -162,7 +148,15 @@
 <style lang="scss">
   #popup-component { width: 280px; }
   #popup-component .list-group-categories {
-    height: 300px;
+    max-height: 393px;
     overflow-y: auto;
+
+    .list-group-item { border-radius: 0; }
+
+  }
+  #popup-component .btn {
+    width: 100%;
+    height: 60px;
+    border-radius: 0;
   }
 </style>

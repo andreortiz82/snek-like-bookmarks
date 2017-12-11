@@ -3,7 +3,7 @@
     <div class="card-body">
       <div class="d-flex justify-content-between align-items-center">
         <h4 class="card-title">{{ category.label.trunc(20) }}</h4>
-        <a class="text-danger" href="#" @click="deleteCategoryAction(category.key, index)">&times;</a>
+        <a class="text-danger" href="#" @click="deleteCategoryAction(category.key)">&times;</a>
       </div>
     </div>
     <ul class="list-group list-group-flush">
@@ -13,7 +13,7 @@
             <img :src="bookmark.favIconUrl" width="20"/>
             {{ bookmark.title.trunc(30) }}
           </a>
-          <a class="text-danger" href="#" @click="deleteBookmarkAction(category, bookmark.key, bindex)">&times;</a>
+          <a class="text-danger" href="#" @click="deleteBookmarkAction(category.key, bookmark.key)">&times;</a>
         </div>
       </li>
       <li>

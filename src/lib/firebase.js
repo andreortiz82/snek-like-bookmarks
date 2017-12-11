@@ -9,18 +9,9 @@ const config = {
 }
 
 const app = fb.initializeApp(config)
-
 export const firebase = app
 export const db = app.database()
 export const usersRef = db.ref('/users')
-export const categoriesRef = db.ref('/categories')
-export const favoritesRef = db.ref('/favorites')
-
-export const userCategories = function(userID, callback){
-  categoriesRef.orderByChild('owner').equalTo(userID).on('value', (snapshot) => {
-    callback(snapshot.val())
-  });
-}
 
 export const heyGoogleLogin = function (callback) {
   var provider = new fb.auth.GoogleAuthProvider()
@@ -61,11 +52,97 @@ export const heyGoogleWhatsMyAuthState = function(callback) {
       usersRef.orderByChild('uid').equalTo(userObject.uid).on('value', (snapshot) => {
         var exists = (snapshot.val() !== null)
         if(!exists){
-          usersRef.child(userObject.uid).set(userObject)
+          usersRef.child(userObject.uid).push(userObject)
         }
       })
       callback(userObject)
     }
-
   })
 }
+
+// Category API
+// ====================================
+
+// CREATE
+// -------------
+export const saveCategory = function(newCategoryObject, callback) {
+  db.ref('/categories').push().then((category) => {
+    newCategoryObject.key = category.key
+    category.set(newCategoryObject)
+    callback(category)
+  })
+}
+
+// READ
+// -------------
+export const getAllCategories = function(user, callback) {
+  db.ref('/categories').orderByChild('owner').equalTo(user.uid).on('value', (snapshot) => {
+    var categories = []
+    snapshot.forEach((child) => {
+      categories.push({
+        key: child.key,
+        label: child.val().label,
+        owner: child.val().owner,
+        bookmarks: child.val().bookmarks,
+        slug: child.val().slug })
+    })
+    callback(categories)
+  })
+}
+export const getCategory = function(categoryKey) {
+  return db.ref('/categories').child(categoryKey)
+}
+
+// UPDATE
+// -------------
+export const updateCategory = function(categoryKey, newCategoryObject, callback) {
+  getCategory(categoryKey).update(newCategoryObject).then((category) => {
+    callback(category)
+  })
+}
+
+// DELETE
+// -------------
+export const deleteCategory = function(categoryKey, callback) {
+  getCategory(categoryKey).remove()
+  callback()
+}
+
+// Bookmark API
+// ====================================
+
+// CREATE
+// -------------
+export const saveBookmark = function(categoryKey, bookMarkObject, callback) {
+  getCategory(categoryKey).child('bookmarks').push().then((bookmark) => {
+    bookMarkObject.key = bookmark.key
+    bookmark.set(bookMarkObject)
+    callback()
+  })
+}
+
+// READ
+// -------------
+export const getBookmark = function(categoryKey, bookmarkKey) {
+  return getCategory(categoryKey).child('bookmarks').child(bookmarkKey)
+}
+
+// UPDATE
+// -------------
+export const updateBookmark = function(categoryKey, bookMarkObject, callback) {
+  getBookmark(categoryKey, bookMarkObject.key).update(bookMarkObject).then((bookmark) => {
+    callback(bookmark)
+  })
+}
+
+// DELETE
+// -------------
+export const deleteBookmark = function(categoryKey, bookmarkKey, callback) {
+  getBookmark(categoryKey, bookmarkKey).remove()
+  callback()
+}
+
+
+
+
+
