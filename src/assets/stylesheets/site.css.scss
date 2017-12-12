@@ -3,3 +3,160 @@
 @import "mixins";
 @import "utils";
 @import "animations";
+
+// Temp
+body {
+  background: $white;
+  font-family: sans-serif;
+}
+
+a { color: $blue; }
+
+.avatar {
+  @include border-radius;
+  width: rem(40);
+  height: rem(40);
+  overflow: hidden;
+  img { width: 100% }
+}
+
+// Navbar
+#navigation-bar {
+  color: $dark;
+  .navbar {
+    @include flex-container;
+    align-items: center;
+    padding: rem(20);
+
+    &.user {
+      @include flex-container;
+      align-items: center;
+
+      .user-info,
+      .add-category {
+        @include fbox(1);
+      }
+
+      .user-info {
+        .bio {
+          @include flex-container;
+          align-items: center;
+          .avatar {
+            margin-right: rem(20);
+          }
+
+          .name {
+            cursor: pointer;
+            transition: color 0.3s;
+            position: relative;
+
+            &:hover {
+              color: $teal;
+            }
+          }
+        }
+      }
+
+      .add-category {
+        text-align: right;
+        .button {
+          @include button($teal, $dark);
+        }
+      }
+
+    }
+  }
+}
+
+// Tabs
+#startpage-wrapper {
+  @include flex-container;
+  align-items: stretch;
+
+  #startpage-sidebar,
+  #startpage-content {
+    @include fbox;
+  }
+
+  #startpage-sidebar {
+    width: rem(250);
+    nav.user-categories {
+      @include flex-container;
+      flex-direction: column;
+      padding: rem(20);
+
+      a.category-item,
+      label,
+      .add-category {
+        @include fbox(1);
+      }
+
+      label {
+        font-size: rem(12);
+        color: $ccc;
+        margin-bottom: rem(20);
+        text-transform: uppercase;
+      }
+
+      a.category-item {
+        @include border-radius;
+        cursor: pointer;
+        transition:all 0.3s;
+        color: $dark;
+        margin-bottom: rem(10);
+        text-decoration: none;
+        padding: rem(5);
+        width: 100%;
+
+        &:hover,
+        &.active {
+          background: $dark;
+          color: $white;
+        }
+      }
+
+      .add-category {
+        margin-bottom: rem(20);
+        .field {
+          input[type='text'] {
+            @include border-radius;
+            height: rem(30);
+            text-indent: rem(10);
+            border:1px solid $ccc;
+          }
+        }
+      }
+    }
+
+  }
+  #startpage-content {
+    width: 100%;
+
+    #bookmark-tiles {
+      @include flex-container;
+      padding: rem(20);
+
+      .bookmark-tile {
+        @include fbox;
+        background: $light;
+        margin: rem(5);
+
+        a {
+          text-decoration: none;
+        }
+        span {
+          display: inline-block;
+          &.icon {
+            width: rem(20);
+            height: rem(20);
+            img { width: 100% }
+          }
+          &.title {
+            color: $dark;
+          }
+        }
+
+      }
+    }
+  }
+}

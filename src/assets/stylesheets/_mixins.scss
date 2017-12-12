@@ -14,7 +14,7 @@
 
 @mixin button($bg, $text, $bdr:none){
   @include border-radius;
-  padding: rem(20);
+  padding: rem(10);
   background: $bg;
   color: $text;
   font-weight: bold;

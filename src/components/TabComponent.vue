@@ -1,16 +1,32 @@
 <template>
   <div id="tab-component">
-    <NavigationBar :user="user" :loginAction="authenticate" :logoutAction="authenticate"/>
+    <section id="startpage-wrapper">
+      <aside id="startpage-sidebar">
+        <nav class="user-categories">
 
-    <div id="category-list" class="container-fluid">
-      <div class="row">
-        <div class="col-3" v-for="(category, index) in categories">
-          <CategoryCard :category="category" :index="index" :deleteBookmarkAction="doDeleteBookmark" :deleteCategoryAction="doDeleteCategory"/>
+          <div class="add-category">
+            <div class="field">
+              <input type="text" id="category-name" placeholder="+ Category" v-model="newCategoryName">
+            </div>
+          </div>
+          <label>My Categories</label>
+          <a @click="[viewCategoryBookmarks(category), setActive(index)]" class="category-item" :class="{'active': activeItemId == index}" v-for="(category, index) in categories">{{ category.label }}</a>
+        </nav>
+      </aside>
+
+      <section id="startpage-content">
+        <NavigationBar :user="user" :loginAction="authenticate" :logoutAction="authenticate"/>
+
+        <div id="bookmark-tiles">
+          <div class="bookmark-tile" v-for="(bookmark, index) in categoryBookmarks">
+            <a :href="bookmark.url">
+              <span class="icon"><img :src="bookmark.favIconUrl"></span>
+              <span class="title">{{ bookmark.title }}</span>
+            </a>
+          </div>
         </div>
-      </div>
-    </div>
-    <AddCategoryModal :saveCategoryAction="saveCategory" ref="AddCategoryModalRef"/>
-    <AddBookmarkModal :saveBookmarkAction="saveBookmark" ref="AddBookmarkModalRef"/>
+      </section>
+    </section>
   </div>
 </template>
 <script>
@@ -23,20 +39,18 @@
     deleteCategory,
     saveBookmark,
     deleteBookmark } from '../lib/firebase';
-  import faker from 'faker'
   import '../lib/String'
 
   import CategoryCard from './CategoryCard.vue'
   import NavigationBar from './NavigationBar.vue'
-  import AddCategoryModal from './AddCategoryModal.vue'
-  import AddBookmarkModal from './AddBookmarkModal.vue'
 
   export default {
     name: 'tab-component',
-    components: { CategoryCard, NavigationBar, AddCategoryModal, AddBookmarkModal },
+    components: { CategoryCard, NavigationBar },
     props: [],
     data () {
       return {
+        activeItemId: '',
         isAddingCustom: false,
         isSaving: false,
         isSaved: false,
@@ -45,15 +59,21 @@
         category: null,
         label: '',
         bookmark: {
-          title: faker.company.companyName(),
-          url: faker.internet.url(),
-          favIconUrl: faker.image.avatar()
+          title: '',
+          url: '',
+          favIconUrl: ''
         },
         categories: [],
-        favorites: []
+        categoryBookmarks: []
       }
     },
     methods: {
+      viewCategoryBookmarks: function (category) {
+        this.categoryBookmarks = category.bookmarks
+      },
+      setActive: function (id) {
+        this.activeItemId = id
+      },
       authenticate: function (bool) {
         var self = this
         if (bool) {
@@ -127,6 +147,7 @@
         self.user = user
         getAllCategories(self.user, (mySavedDataCollection)=>{
           self.categories = mySavedDataCollection
+          self.categoryBookmarks = self.categories[0].bookmarks
         })
       })
 
@@ -142,20 +163,9 @@
 </script>
 
 <style lang="scss">
-  #tab-component {
-    #favorites-bar {
-      margin: 20px 0;
-    }
-    #favorites-bar .card.icon {
-      width: 70px;
-      height: 70px;
-      text-align: center;
-    }
-    .category-card { margin-bottom: 20px; }
-    .category-card .list-group {
-      max-height: 300px;
-      overflow-y: auto;
+  @import "../assets/stylesheets/colors";
+  @import "../assets/stylesheets/variables";
+  @import "../assets/stylesheets/mixins";
+  // @import "../../node_modules/bootstrap/scss/bootstrap.scss";
 
-    }
-  }
 </style>
