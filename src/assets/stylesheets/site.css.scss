@@ -23,6 +23,8 @@ a { color: $blue; }
 // Navbar
 #navigation-bar {
   color: $dark;
+  border-bottom: 1px solid $ccc;
+
   .navbar {
     @include flex-container;
     align-items: center;
@@ -99,13 +101,11 @@ a { color: $blue; }
       }
 
       a.category-item {
-        @include border-radius;
         cursor: pointer;
         transition:all 0.3s;
         color: $dark;
-        margin-bottom: rem(10);
         text-decoration: none;
-        padding: rem(5);
+        padding: rem(10) rem(5);
         width: 100%;
 
         &:hover,
@@ -131,6 +131,22 @@ a { color: $blue; }
   }
   #startpage-content {
     width: 100%;
+
+    #category-info-controls {
+      padding: rem(20);
+
+      input[type='text']#edit-category-name {
+        padding: 0;
+        font-weight: bold;
+        font-size: rem(28);
+        border: none;
+        outline: none;
+
+        &:focus {
+          background: $light;
+        }
+      }
+    }
 
     #bookmark-tiles {
       @include flex-container;

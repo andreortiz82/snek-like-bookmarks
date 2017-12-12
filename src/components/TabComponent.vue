@@ -6,19 +6,22 @@
 
           <div class="add-category">
             <div class="field">
-              <input type="text" id="category-name" placeholder="+ Category" v-model="newCategoryName">
+              <input type="text" id="category-name" placeholder="+ Category" v-model="newCategoryName" @keyup="saveCategory()">
             </div>
           </div>
           <label>My Categories</label>
-          <a @click="[viewCategoryBookmarks(category), setActive(index)]" class="category-item" :class="{'active': activeItemId == index}" v-for="(category, index) in categories">{{ category.label }}</a>
+          <a @click="[viewCategory(category), setActive(index)]" class="category-item" :class="{'active': activeItemId == index}" v-for="(category, index) in categories">{{ category.label }}</a>
         </nav>
       </aside>
 
       <section id="startpage-content">
         <NavigationBar :user="user" :loginAction="authenticate" :logoutAction="authenticate"/>
 
+        <header id="category-info-controls">
+          <input type="text" id="edit-category-name" v-model="editCategoryName" @keyup="updateCategory(activeCategory)">
+        </header>
         <div id="bookmark-tiles">
-          <div class="bookmark-tile" v-for="(bookmark, index) in categoryBookmarks">
+          <div class="bookmark-tile" v-for="(bookmark, index) in activeCategory.bookmarks">
             <a :href="bookmark.url">
               <span class="icon"><img :src="bookmark.favIconUrl"></span>
               <span class="title">{{ bookmark.title }}</span>
@@ -36,6 +39,7 @@
     heyGoogleWhatsMyAuthState,
     getAllCategories,
     saveCategory,
+    updateCategory,
     deleteCategory,
     saveBookmark,
     deleteBookmark } from '../lib/firebase';
@@ -55,8 +59,9 @@
         isSaving: false,
         isSaved: false,
         newCategoryName: '',
+        editCategoryName: '',
         user: null,
-        category: null,
+        activeCategory: '',
         label: '',
         bookmark: {
           title: '',
@@ -68,8 +73,9 @@
       }
     },
     methods: {
-      viewCategoryBookmarks: function (category) {
-        this.categoryBookmarks = category.bookmarks
+      viewCategory: function (category) {
+        this.activeCategory = category
+        this.editCategoryName = this.activeCategory.label
       },
       setActive: function (id) {
         this.activeItemId = id
@@ -113,17 +119,34 @@
             this.bookmark.favIconUrl = tabs[0].favIconUrl })
         }
       },
-      saveCategory: function (value) {
-        var newCategoryObject = {
-          label: value,
-          isFavorite: false,
-          slug: value.replace(/\s/g, '_').toLowerCase(),
-          owner: this.user.uid }
+      updateCategory: function(category) {
+        if(event.keyCode === 13) {
+          var updatedCategoryObject = {
+            label: this.editCategoryName,
+            slug: this.editCategoryName.replace(/\s/g, '_').toLowerCase(),
+            owner: this.user.uid }
 
-        saveCategory(newCategoryObject, (category) => {
-          $('#add-category-modal').modal('hide')
-          this.$refs.AddCategoryModalRef.newCategoryName = ''
-        })
+          updateCategory(category.key, updatedCategoryObject, ()=>{})
+
+          this.activeCategory = category
+          this.editCategoryName = updatedCategoryObject.label
+        }
+      },
+      saveCategory: function () {
+        var self = this
+        if(event.keyCode === 13) {
+          var newCategoryObject = {
+            label: self.newCategoryName,
+            isFavorite: false,
+            slug: self.newCategoryName.replace(/\s/g, '_').toLowerCase(),
+            owner: self.user.uid }
+
+          saveCategory(newCategoryObject, (category) => {
+            self.activeItemId = self.categories.length-1
+            self.newCategoryName = ''
+            self.editCategoryName = self.activeCategory.label
+          })
+        }
       },
       saveBookmark: function (categoryKey, title, url, favIconUrl) {
         var bookMarkObject = {
@@ -147,14 +170,10 @@
         self.user = user
         getAllCategories(self.user, (mySavedDataCollection)=>{
           self.categories = mySavedDataCollection
-          self.categoryBookmarks = self.categories[0].bookmarks
+          self.activeCategory = self.categories[0]
+          self.editCategoryName = self.activeCategory.label
         })
       })
-
-      $('#add-bookmark-modal').on('show.bs.modal', function (event) {
-        var button = $(event.relatedTarget)
-        var categoryKey = button.data('category-key')
-        self.$refs.AddBookmarkModalRef.categoryKey = categoryKey })
     },
     updated: function () {},
     destroyed: function () {}
