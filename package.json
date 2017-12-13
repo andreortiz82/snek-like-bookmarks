@@ -23,7 +23,7 @@
     "npm",
     "firebase"
   ],
-  "main": "src/tab.js",
+  "main": "dist/tab.js",
   "dependencies": {
     "axios": "^0.17.1",
     "bootstrap": "^4.0.0-beta.2",
