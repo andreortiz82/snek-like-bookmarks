@@ -1,1 +1,1 @@
-web: node src/tab.js
+web: node tab.js
