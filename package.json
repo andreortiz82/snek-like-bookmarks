@@ -6,6 +6,7 @@
   "license": "MIT",
   "private": true,
   "scripts": {
+    "start": "cross-env NODE_ENV=development webpack-dev-server --open --hot",
     "dev": "cross-env NODE_ENV=development webpack-dev-server --open --hot",
     "copyFavicon": "cp -v favicon.ico ./dist/favicon.ico && echo ok",
     "copyManifest": "cp -v manifest.json ./dist/manifest.json && echo ok",
@@ -23,7 +24,7 @@
     "npm",
     "firebase"
   ],
-  "main": "dist/tab.js",
+  "main": "src/tab.js",
   "dependencies": {
     "axios": "^0.17.1",
     "bootstrap": "^4.0.0-beta.2",
