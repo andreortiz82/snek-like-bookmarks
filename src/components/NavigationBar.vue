@@ -14,9 +14,6 @@
           <div class="avatar">
             <img class="mr-3" :src="user.photoURL" width="40"/>
           </div>
-          <div class="name" @click="logoutAction(false)">
-            Hi {{user.displayName}}!
-          </div>
         </div>
       </div>
     </nav>

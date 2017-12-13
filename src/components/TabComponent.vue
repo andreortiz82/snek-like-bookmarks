@@ -14,22 +14,83 @@
         </nav>
       </aside>
 
-      <section id="startpage-content">
+      <div id="startpage-content">
         <NavigationBar :user="user" :loginAction="authenticate" :logoutAction="authenticate"/>
 
         <header id="category-info-controls">
           <input type="text" id="edit-category-name" v-model="editCategoryName" @keyup="updateCategory(activeCategory)">
-        </header>
-        <div id="bookmark-tiles">
-          <div class="bookmark-tile" v-for="(bookmark, index) in activeCategory.bookmarks">
-            <a :href="bookmark.url">
-              <span class="icon"><img :src="bookmark.favIconUrl"></span>
-              <span class="title">{{ bookmark.title }}</span>
+          <nav class="category-options">
+            <a href="#" class="edit" @click="editMode = !editMode">
+              <span v-if="editMode">Done</span>
+              <span v-else>Edit Bookmarks</span>
             </a>
+            <a href="#" class="delete" @click="doDeleteCategory(activeCategory.key)">Delete Category</a>
+          </nav>
+        </header>
+
+        <div id="bookmark-tiles">
+          <div class="bookmark-tile-container">
+            <div class="bookmark-tile" v-for="(bookmark, index) in activeCategory.bookmarks">
+
+              <a :href="bookmark.url" v-if="!editMode">
+                <span class="icon"><img :src="bookmark.favIconUrl"></span>
+                <span class="title">{{ bookmark.title.trunc(40) }}</span>
+              </a>
+
+              <div v-else>
+                <a href="#">
+                  <span class="icon"><img :src="bookmark.favIconUrl"></span>
+                  <span class="title">{{ bookmark.title.trunc(40) }}</span>
+                </a>
+
+                <div class="bookmark-options">
+                  <a href="#" @click="initEdit(bookmark)">
+                    Edit
+                  </a>
+                  <a href="#" class="delete" @click="doDeleteBookmark(activeCategory.key, bookmark.key)">
+                    Delete
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </section>
+
+
+      </div>
     </section>
+
+    <section id="editPanel" v-if="editWindowShowing">
+      <div class="window-pane">
+        <a href="#" class="close" @click="editWindowShowing = !editWindowShowing">&times;</a>
+
+        <div class="field">
+          <label for="bookmark-title">Title</label>
+          <input type="text" id="bookmark-title" v-model="bookmark.title">
+        </div>
+        <div class="field">
+          <label for="bookmark-url">URL</label>
+          <input type="text" id="bookmark-url" v-model="bookmark.url">
+        </div>
+        <div class="field">
+          <label for="bookmark-favIconUrl" >Icon URL</label>
+          <input type="text" id="bookmark-favIconUrl" v-model="bookmark.favIconUrl">
+        </div>
+
+        <div class="field">
+          <label class="favorite-check" for="bookmark-favorite">
+            <input type="checkbox" id="bookmark-favorite" v-model="bookmark.isFavorite">
+            <span>Yes. Favorite this bookmark!</span>
+          </label>
+        </div>
+
+        <div class="actions">
+          <button class="button" type="button" @click="updateBookmark(activeCategory.key, bookmark)">Save</button>
+          <a href="#" class="cancel" @click="editWindowShowing = !editWindowShowing">cancel</a>
+        </div>
+      </div>
+    </section>
+
   </div>
 </template>
 <script>
@@ -40,6 +101,7 @@
     getAllCategories,
     saveCategory,
     updateCategory,
+    updateBookmark,
     deleteCategory,
     saveBookmark,
     deleteBookmark } from '../lib/firebase';
@@ -56,6 +118,8 @@
       return {
         activeItemId: '',
         isAddingCustom: false,
+        editMode: false,
+        editWindowShowing: false,
         isSaving: false,
         isSaved: false,
         newCategoryName: '',
@@ -66,7 +130,9 @@
         bookmark: {
           title: '',
           url: '',
-          favIconUrl: ''
+          favIconUrl: '',
+          color: '',
+          isFavorite: ''
         },
         categories: [],
         categoryBookmarks: []
@@ -79,6 +145,10 @@
       },
       setActive: function (id) {
         this.activeItemId = id
+      },
+      initEdit: function (bookmark) {
+        this.bookmark = bookmark
+        this.editWindowShowing = !this.editWindowShowing
       },
       authenticate: function (bool) {
         var self = this
@@ -97,14 +167,16 @@
         }
       },
       doDeleteBookmark: function (categoryKey, bookmarkKey) {
-        if(confirm('Are you sure?')){
+        if(confirm('Are you sure?')) {
           deleteBookmark(categoryKey, bookmarkKey, ()=>{})
         }
         event.preventDefault()
       },
       doDeleteCategory: function (categoryKey) {
         if(confirm('Are you sure?')){
-          deleteCategory(categoryKey, ()=>{})
+          deleteCategory(categoryKey, ()=>{
+            this.activeItemId = 0
+          })
         }
         event.preventDefault()
       },
@@ -161,6 +233,11 @@
           this.$refs.AddBookmarkModalRef.url = ''
           this.$refs.AddBookmarkModalRef.favIconUrl = ''
           this.$refs.AddBookmarkModalRef.categoryKey = ''
+        })
+      },
+      updateBookmark: function (categoryKey, bookmark) {
+        updateBookmark(categoryKey, bookmark, () => {
+          this.editWindowShowing = !this.editWindowShowing
         })
       }
     },
