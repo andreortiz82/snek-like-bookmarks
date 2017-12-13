@@ -14,6 +14,16 @@
     "copyBundle": "npm run copyManifest && npm run copyIndex && npm run copyPopup && npm run copyFavicon",
     "build": "cross-env NODE_ENV=production webpack --progress --hide-modules && npm run copyBundle"
   },
+  "engines": {
+    "node": "8.9.1"
+  },
+  "keywords": [
+    "node",
+    "heroku",
+    "npm",
+    "firebase"
+  ],
+  "main": "src/tab.js",
   "dependencies": {
     "axios": "^0.17.1",
     "bootstrap": "^4.0.0-beta.2",
