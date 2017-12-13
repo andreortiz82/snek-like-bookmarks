@@ -33,13 +33,13 @@
             <div class="bookmark-tile" v-for="(bookmark, index) in activeCategory.bookmarks">
 
               <a :href="bookmark.url" v-if="!editMode">
-                <span class="icon"><img :src="bookmark.favIconUrl"></span>
+                <span class="icon"><img :src="getIcon(bookmark.favIconUrl)"></span>
                 <span class="title">{{ bookmark.title.trunc(40) }}</span>
               </a>
 
               <div v-else>
                 <a href="#">
-                  <span class="icon"><img :src="bookmark.favIconUrl"></span>
+                  <span class="icon"><img :src="getIcon(bookmark.favIconUrl)"></span>
                   <span class="title">{{ bookmark.title.trunc(40) }}</span>
                 </a>
 
@@ -110,9 +110,11 @@
   import CategoryCard from './CategoryCard.vue'
   import NavigationBar from './NavigationBar.vue'
 
+  import noImage from '../assets/images/no-image.png'
+
   export default {
     name: 'tab-component',
-    components: { CategoryCard, NavigationBar },
+    components: { CategoryCard, NavigationBar, noImage },
     props: [],
     data () {
       return {
@@ -139,6 +141,13 @@
       }
     },
     methods: {
+      getIcon: function(icon) {
+        if (icon == '' || icon == null) {
+          return noImage
+        } else {
+          return icon
+        }
+      },
       viewCategory: function (category) {
         this.activeCategory = category
         this.editCategoryName = this.activeCategory.label
@@ -236,9 +245,8 @@
         })
       },
       updateBookmark: function (categoryKey, bookmark) {
-        updateBookmark(categoryKey, bookmark, () => {
-          this.editWindowShowing = !this.editWindowShowing
-        })
+        updateBookmark(categoryKey, bookmark, () => {})
+        this.editWindowShowing = !this.editWindowShowing
       }
     },
     mounted: function () {
