@@ -1,5 +1,5 @@
 {
-  "name": "magpie-bookmark",
+  "name": "snek-like-bookmarks",
   "description": "A Vue.js project",
   "version": "1.0.0",
   "author": "Andre Ortiz <hello@andreortiz.com>",
@@ -12,15 +12,13 @@
     "copyIndex": "cp -v ./templates/index.html ./dist/index.html && echo ok",
     "copyPopup": "cp -v ./templates/popup.html ./dist/popup.html && echo ok",
     "copyBundle": "npm run copyManifest && npm run copyIndex && npm run copyPopup && npm run copyFavicon",
-    "build": "cross-env NODE_ENV=production webpack --progress --hide-modules && npm run copyBundle"
+    "build": "cross-env NODE_ENV=production webpack --progress --hide-modules"
   },
   "dependencies": {
     "axios": "^0.17.1",
-    "bootstrap": "^4.0.0-beta.2",
+    "copy-webpack-plugin": "^4.3.1",
     "faker": "^4.1.0",
     "firebase": "^4.7.0",
-    "font-awesome": "^4.7.0",
-    "jquery": "^3.2.1",
     "normalize": "^0.3.1",
     "polyfill": "^0.1.0",
     "underscore": "^1.8.3",

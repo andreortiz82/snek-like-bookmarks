@@ -142,7 +142,8 @@
   import CategoryCard from './CategoryCard.vue'
   import NavigationBar from './NavigationBar.vue'
   import Logo from './Logo.vue'
-  import noImage from '../assets/images/no-image.png'
+  import noImage from '../../static/no-image.png'
+
   export default {
     name: 'tab-component',
     components: { CategoryCard, NavigationBar, noImage, Logo },

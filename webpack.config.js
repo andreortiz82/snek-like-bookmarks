@@ -1,5 +1,6 @@
 var path = require('path')
 var webpack = require('webpack')
+var CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   entry: {
@@ -79,12 +80,11 @@ module.exports = {
     extensions: ['*', '.js', '.vue', '.json']
   },
   plugins: [
-    new webpack.ProvidePlugin({
-      $: 'jquery',
-      jquery: 'jquery',
-      'window.jQuery': 'jquery',
-      jQuery: 'jquery'
-    })
+    new CopyWebpackPlugin([
+      { from: './static', to: 'static' },
+      { from: './templates' },
+      { from: './manifest.json' }
+    ])
   ],
   devServer: {
     historyApiFallback: true,
