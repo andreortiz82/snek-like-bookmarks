@@ -1,6 +1,7 @@
 <template>
   <div id="tab-component">
-    <section id="startpage-wrapper">
+
+    <section v-if="user" id="startpage-wrapper">
       <aside id="startpage-sidebar">
         <div id="logo">
           <Logo/>
@@ -91,6 +92,16 @@
         </div>
 
 
+      </div>
+    </section>
+
+    <section v-else id="welcome-wrapper">
+      <div class="jumbo">
+        <Logo/>
+        <h1>Snek welcomes you</h1>
+        <p>Snek will help organize bookmarks.</p>
+
+        <img class="google-login-button" @click="authenticate(true)" src="/static/btn_google_signin_light_normal_web@2x.png" width="240">
       </div>
     </section>
 

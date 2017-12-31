@@ -1,31 +1,43 @@
 <template>
   <div id="popup-component">
-    <div v-if="!isSaving || !isSaved">
-      <div class="popup-list-container" v-if="!isAddingCustom">
 
-        <section v-if="user === null" >
-          <a href="#" class="login-button" @click="authenticate(true)">Login</a>
-        </section>
+    <div v-if="user">
+      <div v-if="!isSaving || !isSaved">
+        <div class="popup-list-container" v-if="!isAddingCustom">
 
-        <section class="categories-list" v-else>
-          <div>
-            <a :key="index" v-for="(category, index) in categories" class="list-group-item" @click="chooseFromUserCategories(category, index)">{{ category.label }}</a>
+          <section v-if="user === null" >
+            <a href="#" class="login-button" @click="authenticate(true)">Login</a>
+          </section>
+
+          <section class="categories-list" v-else>
+            <div>
+              <a :key="index" v-for="(category, index) in categories" class="list-group-item" @click="chooseFromUserCategories(category, index)">{{ category.label }}</a>
+            </div>
+             <button class="add-button" @click="toggleView()">+ Add Category</button>
+          </section>
+        </div>
+
+        <div class="form" v-else>
+          <div class="form-body">
+            <label>New Category</label>
+            <div class="field">
+              <input type="text" class="category-field" name="category" v-model="newCategoryName">
+            </div>
+            <button type="button" class="save-button" @click="saveCustomCategory()">Save</button>
+            <button type="button" class="cancel" @click="toggleView()">cancel</button>
           </div>
-           <button class="add-button" @click="toggleView()">+ Add Category</button>
-        </section>
-      </div>
-
-      <div class="form" v-else>
-        <div class="form-body">
-          <label>New Category</label>
-          <div class="field">
-            <input type="text" class="category-field" name="category" v-model="newCategoryName">
-          </div>
-          <button type="button" class="save-button" @click="saveCustomCategory()">Save</button>
-          <button type="button" class="cancel" @click="toggleView()">cancel</button>
         </div>
       </div>
     </div>
+
+    <!-- else -->
+    <section id="welcome-popup-wrapper" v-else>
+      <div>
+        <Logo/>
+        <p><b>Snek</b> will help organize bookmarks.</p>
+        <img class="google-login-button" @click="authenticate(true)" src="/static/btn_google_signin_light_normal_web@2x.png" width="200">
+      </div>
+    </section>
 
     <div class="done" v-else>
       <img src="static/favicon-100.png">
@@ -36,6 +48,8 @@
 </template>
 
 <script>
+  import Logo from './Logo.vue'
+
   import {
     heyGoogleLogin,
     heyGoogleLogout,
@@ -48,6 +62,7 @@
 
   export default {
     name: 'popup-component',
+    components: { Logo },
     data () {
       return {
         isAddingCustom: false,
@@ -149,10 +164,26 @@
   @import "../assets/stylesheets/variables";
   @import "../assets/stylesheets/mixins";
 
+
   #popup-component { width: 260px; }
   #popup-component .popup-list-container {
 
   }
+
+  #welcome-popup-wrapper {
+    text-align: center;
+
+    #logo svg {
+      width: rem(100);
+      height: rem(100);
+    }
+
+    > div {
+      padding: rem(20);
+      background: $light;
+    }
+  }
+
   .categories-list {
     > div {
       max-height: rem(280);
