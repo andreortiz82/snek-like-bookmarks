@@ -23,8 +23,8 @@
   border: $bdr;
   transition:all 0.3s;
   &:hover {
-    background: rgba($bg, 0.8);
-    @include scale(1.15);
+    background: $bg*0.9;
+    // @include scale(1.15);
   }
   &:active { @include scale(1); }
   &:focus {
