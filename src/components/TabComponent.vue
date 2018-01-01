@@ -7,13 +7,13 @@
           <Logo/>
         </div>
         <nav class="user-categories">
+          <label>My Categories</label>
 
           <div class="add-category">
             <div class="field">
               <input type="text" id="category-name" placeholder="+ Category" v-model="newCategoryName" @keyup="saveCategory()">
             </div>
           </div>
-          <label>My Categories</label>
           <a @click="[viewCategory(category), setActive(index)]" class="category-item" :class="{'active': activeItemId == index}" v-for="(category, index) in categories">{{ category.label }}</a>
         </nav>
       </aside>
@@ -129,7 +129,7 @@
         </div>
 
         <div class="actions">
-          <button class="button" type="button" @click="updateBookmark(activeCategory, bookmark)">Save</button>
+          <button class="button" type="button" @click="doUpdateBookmark(activeCategory.key, bookmark)">Save</button>
           <a href="#" class="cancel" @click="editWindowShowing = !editWindowShowing">cancel</a>
         </div>
       </div>
@@ -287,7 +287,7 @@
           this.$refs.AddBookmarkModalRef.categoryKey = ''
         })
       },
-      updateBookmark: function (categoryKey, bookmark) {
+      doUpdateBookmark: function (categoryKey, bookmark) {
         updateBookmark(categoryKey, bookmark, () => {})
         this.editWindowShowing = !this.editWindowShowing
       }

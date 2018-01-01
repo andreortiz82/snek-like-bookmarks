@@ -6,8 +6,11 @@
 
 #logo {
   text-align: center;
+  padding: rem(10);
+
   svg {
-    width: rem(130);
+    width: rem(80);
+    height: rem(80);
   }
   .head{ fill:$dark; }
   .touge{ fill:$red; }
@@ -59,7 +62,7 @@ a { color: $blue; }
 
 // Forms
 .field {
-  margin-bottom: rem(20);
+  margin-bottom: 0;
 
   > label {
     display: block;
@@ -110,8 +113,10 @@ a { color: $blue; }
 
 // Navbar
 #navigation-bar {
-  color: $dark;
-  // border-bottom: 1px solid $ccc;
+  color: $white;
+  background: $dark;
+  padding: rem(10);
+
   .navbar {
     @include flex-container;
     align-items: center;
@@ -169,6 +174,7 @@ a { color: $blue; }
 
   #startpage-sidebar {
     width: rem(250);
+    background: $light;
 
     nav.user-categories {
       @include flex-container;
